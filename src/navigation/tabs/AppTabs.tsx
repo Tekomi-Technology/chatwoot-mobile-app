@@ -25,6 +25,7 @@ import ChatScreen from '@/screens/chat-screen/ChatScreen';
 import ContactDetailsScreen from '@/screens/contact-details/ContactDetailsScreen';
 import DashboardScreen from '@/screens/dashboard/DashboardScreen';
 import SearchScreen from '@/screens/search/SearchScreen';
+import { PhoneScreen } from '@/screens/phone/PhoneScreen';
 
 import { selectInstallationUrl } from '@/store/settings/settingsSelectors';
 import { BottomTabBar } from './BottomTabBar';
@@ -46,6 +47,7 @@ const Tab = createBottomTabNavigator();
 export type TabParamList = {
   Conversations: undefined;
   Inbox: undefined;
+  Phone: undefined;
   Settings: undefined;
   Login: undefined;
   ConfigInstallationURL: undefined;
@@ -186,6 +188,9 @@ const Tabs = () => {
           options={{ headerShown: false }}
           component={ConversationStack}
         />
+      )}
+      {hasConversationPermission && (
+        <Tab.Screen name="Phone" options={{ headerShown: false }} component={PhoneScreen} />
       )}
       <Tab.Screen name="Settings" options={{ headerShown: false }} component={SettingsStack} />
     </Tab.Navigator>

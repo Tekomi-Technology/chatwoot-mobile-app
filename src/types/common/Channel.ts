@@ -11,6 +11,9 @@ export type Channel =
   | 'Channel::Api'
   | 'Channel::Instagram'
   | 'Channel::Tiktok'
+  | 'Channel::ZaloOa'
+  | 'Channel::ZaloPersonal'
+  | 'Channel::Phone'
   | 'Channel::All';
 
 export type AllChannels = Channel | 'All';
@@ -34,6 +37,9 @@ export const InboxTypes = {
   SMS: 'Channel::Sms',
   INSTAGRAM: 'Channel::Instagram',
   TIKTOK: 'Channel::Tiktok',
+  ZALO_OA: 'Channel::ZaloOa',
+  ZALO_PERSONAL: 'Channel::ZaloPersonal',
+  PHONE: 'Channel::Phone',
 };
 
 export const getRandomChannel = () => {

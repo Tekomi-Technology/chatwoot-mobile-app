@@ -15,4 +15,7 @@ export type Inbox = {
   provider: string;
   messageTemplates?: WhatsAppMessageTemplate[];
   contentTemplates?: TwilioContentTemplates;
+  zaloSessionStatus?: 'connected' | 'reconnecting' | 'expired' | string;
+  zaloDisplayName?: string;
+  zaloStatusUpdatedAt?: number;
 };

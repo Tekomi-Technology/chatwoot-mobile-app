@@ -26,6 +26,9 @@ const persistConfig = {
   key: 'Root',
   version: CURRENT_VERSION,
   storage: AsyncStorage,
+  // SIP registration and call state are only valid while the native client is alive.
+  // Persisting them would make a relaunched app look registered without a live SIP socket.
+  blacklist: ['phone'],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate: async (state: any) => {
     // If the stored version is older or doesn't exist, return initial state

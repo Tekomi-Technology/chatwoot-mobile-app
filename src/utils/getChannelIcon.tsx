@@ -10,6 +10,8 @@ import {
   InstagramFilledIcon,
   MessengerFilledIcon,
   SMSFilledIcon,
+  ZaloFilledIcon,
+  CallIcon,
 } from '@/svg-icons';
 
 import { Channel, InboxTypes } from '@/types';
@@ -64,6 +66,14 @@ export const getChannelIcon = (channelType: Channel, medium: string, additionalT
 
   if (channelType === InboxTypes.LINE) {
     return <LineFilledIcon />;
+  }
+
+  if (channelType === InboxTypes.ZALO_OA || channelType === InboxTypes.ZALO_PERSONAL) {
+    return <ZaloFilledIcon />;
+  }
+
+  if (channelType === InboxTypes.PHONE) {
+    return <CallIcon />;
   }
 
   if (channelType === InboxTypes.SMS) {

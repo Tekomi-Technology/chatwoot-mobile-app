@@ -17,7 +17,31 @@ export type ContentType =
   | 'article'
   | 'incoming_email'
   | 'input_csat'
-  | 'integrations';
+  | 'integrations'
+  | 'sticker'
+  | 'phone_call';
+
+export type PhoneCallMessageData = {
+  phoneCallId?: number;
+  pbxCallId?: string;
+  direction?: 'inbound' | 'outbound';
+  status?: string;
+  customerNumber?: string;
+  extension?: string;
+  fromNumber?: string;
+  toNumber?: string;
+  durationSeconds?: number;
+  hangupCause?: string;
+  recordingUrl?: string;
+  agentId?: number;
+  agentName?: string;
+  startedAt?: string;
+  answeredAt?: string;
+  endedAt?: string;
+  callbotSummary?: string;
+  callbotOutcome?: string;
+  callbotAnalysisStatus?: string;
+};
 
 export enum MessageType {
   'incoming',
@@ -65,6 +89,7 @@ export type MessageContentAttributes = {
   contentType: ContentType;
   isUnsupported: boolean;
   translations?: Record<string, string>;
+  data?: PhoneCallMessageData;
 };
 
 export interface Message {

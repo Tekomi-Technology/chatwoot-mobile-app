@@ -295,6 +295,7 @@ export const MEDIA_TYPES = [
 
 export const CONTENT_TYPES = {
   INCOMING_EMAIL: 'incoming_email',
+  PHONE_CALL: 'phone_call',
 };
 
 export const ORIENTATION = {

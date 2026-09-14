@@ -17,10 +17,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           'This app requires access to the camera to upload images and videos.',
         NSPhotoLibraryUsageDescription:
           'This app requires access to the photo library to upload images.',
-        NSMicrophoneUsageDescription: 'This app requires access to the microphone to record audio.',
+        NSMicrophoneUsageDescription:
+          'This app requires access to the microphone for voice notes and secure calls.',
         NSAppleMusicUsageDescription:
           'This app does not use Apple Music, but a system API may require this permission.',
-        UIBackgroundModes: ['fetch', 'remote-notification'],
+        UIBackgroundModes: ['fetch', 'remote-notification', 'audio'],
         ITSAppUsesNonExemptEncryption: false,
       },
       // Please use the relative path to the google-services.json file
@@ -116,6 +117,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       './with-android-notification-channel.js',
       './with-notifee-maven-repo.js',
       './with-ios-modular-headers.js',
+      '@config-plugins/react-native-webrtc',
     ],
     androidNavigationBar: { backgroundColor: '#ffffff' },
   };
