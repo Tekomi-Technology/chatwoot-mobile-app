@@ -1,0 +1,42 @@
+packages:
+  - '.'
+
+# Temporary: allows the current EAS build to resolve already-reviewed lockfile entries
+# that are less than pnpm's default release-age threshold.
+minimumReleaseAge: 0
+
+nodeLinker: hoisted
+
+allowBuilds:
+  '@firebase/util': false
+  '@sentry/cli': true
+  dtrace-provider: false
+  esbuild: true
+  hyochan-welcome: false
+  protobufjs: true
+  unrs-resolver: true
+
+overrides:
+  '@expo/dom-webview': 57.0.1
+  form-data: ^4.0.4
+  node-forge: ^1.3.2
+  glob: ^10.5.0
+  markdown-it: ^12.3.2
+  js-yaml: ^4.1.1
+  storybook: 8.6.17
+  '@expo/cli>minimatch': 3.1.4
+  '@expo/metro-config>minimatch': 3.1.4
+  '@expo/fingerprint>minimatch': 3.1.4
+  '@typescript-eslint/typescript-estree>minimatch': 9.0.7
+  'glob>minimatch': 9.0.7
+  tar: 7.5.11
+
+patchedDependencies:
+  'ffmpeg-kit-react-native@6.0.2': patches/ffmpeg-kit-react-native.patch
+  'react-native-ios-utilities@5.2.0': patches/react-native-ios-utilities@5.2.0.patch
+  'react-native-audio-recorder-player@3.6.12': patches/react-native-audio-recorder-player@3.6.12.patch
+  '@react-native-menu/menu@1.2.3': patches/@react-native-menu__menu@1.2.3.patch
+  '@react-native-clipboard/clipboard@1.16.2': patches/@react-native-clipboard__clipboard@1.16.2.patch
+  react-native-modal: patches/react-native-modal.patch
+  'expo-modules-jsi@57.0.3': patches/expo-modules-jsi@57.0.3.patch
+  'react-native-reanimated@4.5.5': patches/react-native-reanimated@4.5.5.patch

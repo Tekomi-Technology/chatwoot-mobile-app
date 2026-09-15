@@ -13,7 +13,18 @@ type SipSession = {
   mute: (options: { audio: boolean }) => void;
   unmute: (options: { audio: boolean }) => void;
   sendDTMF: (tone: string) => void;
-  on: (event: string, callback: (event?: { cause?: string }) => void) => void;
+  on: (event: string, callback: (event?: SipEvent) => void) => void;
+};
+
+type SipEvent = {
+  cause?: string;
+  candidate?: { type?: string; candidate?: string };
+  ready?: () => void;
+};
+
+type SipSessionEvent = {
+  originator: string;
+  session: SipSession;
 };
 
 type SipUserAgent = {
@@ -21,10 +32,7 @@ type SipUserAgent = {
   stop: () => void;
   call: (target: string, options: Record<string, unknown>) => void;
   set: (key: string, value: string) => void;
-  on: (
-    event: string,
-    callback: (event: { originator: string; session: SipSession }) => void,
-  ) => void;
+  on: (event: string, callback: (event: SipEvent & Partial<SipSessionEvent>) => void) => void;
 };
 
 type RuntimeListener = (state: Partial<PhoneRuntimeState>) => void;
@@ -34,6 +42,16 @@ const hasTurnServer = (iceServers: RTCIceServer[]) =>
     const urls = Array.isArray(server.urls) ? server.urls : [server.urls];
     return urls.some(url => typeof url === 'string' && /^turns?:/i.test(url));
   });
+
+const isRelayCandidate = (candidate?: SipEvent['candidate']) =>
+  candidate?.type === 'relay' || candidate?.candidate?.includes(' typ relay ');
+
+// SIP over WebSocket does not use trickle ICE in this PBX integration. Once a
+// TURN relay candidate is available, it is enough to create a routable media
+// path; waiting for every ICE transport can leave the call without SDP/media.
+const finishIceGatheringOnRelay = (event?: SipEvent) => {
+  if (isRelayCandidate(event?.candidate)) event?.ready?.();
+};
 
 /**
  * Keeps SIP credentials and non-serializable WebRTC objects outside Redux.
@@ -88,7 +106,9 @@ class SoftphoneClient {
       this.registered = false;
       this.emit({ status: 'error', error: event?.cause || 'SIP registration failed' });
     });
-    ua.on('newRTCSession', event => this.handleNewSession(event.originator, event.session));
+    ua.on('newRTCSession', event => {
+      if (event.originator && event.session) this.handleNewSession(event.originator, event.session);
+    });
 
     this.ua = ua;
     ua.start();
@@ -105,6 +125,7 @@ class SoftphoneClient {
       : undefined;
     try {
       this.ua.call(`sip:${destination}@${this.credentials.sipDomain}`, {
+        eventHandlers: { icecandidate: finishIceGatheringOnRelay },
         mediaConstraints: MEDIA_CONSTRAINTS,
         pcConfig,
       });
@@ -180,6 +201,9 @@ class SoftphoneClient {
       muted: false,
       error: '',
     });
+    if (direction === 'inbound') {
+      session.on('icecandidate', finishIceGatheringOnRelay);
+    }
     session.on('progress', () => this.emit({ status: 'ringing' }));
     session.on('accepted', () => this.emit({ status: 'active' }));
     session.on('confirmed', () => this.emit({ status: 'active' }));
@@ -187,6 +211,25 @@ class SoftphoneClient {
     session.on('failed', event => {
       this.emit({ error: event?.cause || 'Call failed' });
       this.resetSession();
+    });
+    session.on('getusermediafailed', event => {
+      this.emit({
+        status: 'error',
+        error: event?.cause || 'Không thể truy cập microphone. Hãy kiểm tra quyền Microphone.',
+      });
+    });
+    [
+      'peerconnection:createofferfailed',
+      'peerconnection:createanswerfailed',
+      'peerconnection:setlocaldescriptionfailed',
+      'peerconnection:setremotedescriptionfailed',
+    ].forEach(eventName => {
+      session.on(eventName, event => {
+        this.emit({
+          status: 'error',
+          error: event?.cause || `WebRTC failed during ${eventName}`,
+        });
+      });
     });
   }
 

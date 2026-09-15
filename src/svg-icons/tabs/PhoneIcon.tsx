@@ -8,6 +8,7 @@ export const PhoneIconOutline = () => (
   <Svg width="49" height="40" viewBox="0 0 49 40" fill="none">
     <Path
       d={path}
+      transform="translate(0 -5)"
       stroke="#171717"
       strokeWidth="1.5"
       strokeLinecap="round"
@@ -18,6 +19,6 @@ export const PhoneIconOutline = () => (
 
 export const PhoneIconFilled = () => (
   <Svg width="49" height="40" viewBox="0 0 49 40" fill="none">
-    <Path d={path} fill="#171717" />
+    <Path d={path} transform="translate(0 -5)" fill="#171717" />
   </Svg>
 );

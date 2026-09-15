@@ -10,9 +10,22 @@
     },
     "production": {
       "autoIncrement": true
+    },
+    "testflight": {
+      "extends": "production",
+      "environment": "production",
+      "autoIncrement": true
     }
   },
   "submit": {
+    "testflight": {
+      "ios": {
+        "ascAppId": "6811854991",
+        "ascApiKeyPath": "/Users/trung/Downloads/AuthKey_C4TD42K7W8.p8",
+        "ascApiKeyId": "C4TD42K7W8",
+        "ascApiKeyIssuerId": "dd5da006-0c2d-4fcb-a19b-1147a754592a"
+      }
+    },
     "production": {
       "android": {
         "track": "internal" // (enum: production, beta, alpha, internal)

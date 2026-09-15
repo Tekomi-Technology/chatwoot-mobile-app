@@ -1,4 +1,5 @@
 import { apiService } from '@/services/APIService';
+import { assertTrustedPhoneNetwork } from './phoneNetwork';
 import type { PhoneCredentials } from './phoneTypes';
 
 type PhoneCredentialsResponse = {
@@ -16,7 +17,7 @@ export class PhoneService {
       `inboxes/${inboxId}/phone_credentials`,
     );
     const data = response.data;
-    return {
+    const credentials = {
       inboxId: data.inbox_id,
       wssUrl: data.wss_url,
       sipDomain: data.sip_domain,
@@ -24,5 +25,7 @@ export class PhoneService {
       sipPassword: data.sip_password,
       iceServers: data.ice_servers || [],
     };
+    assertTrustedPhoneNetwork(credentials);
+    return credentials;
   }
 }

@@ -1,17 +1,29 @@
 import { ConfigContext, ExpoConfig } from 'expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
+  const appLinkHost = process.env.EXPO_PUBLIC_APP_LINK_HOST;
+  // EAS cannot inject this into a dynamic app.config.ts. It is a public project identifier,
+  // not a credential; keep the TD1 mobile binary linked to the Tekomi EAS project by default.
+  const easOwner = process.env.EXPO_PUBLIC_EAS_OWNER || 'tekomi';
+  const easProjectId = process.env.EXPO_PUBLIC_PROJECT_ID || '894d87f0-3956-43f2-86c4-d14684c0b492';
+  // EAS File variables resolve to a temporary path on the remote builder. The public names
+  // remain as a local-development fallback for teams already using them.
+  const iosGoogleServicesFile =
+    process.env.IOS_GOOGLE_SERVICES_FILE || process.env.EXPO_PUBLIC_IOS_GOOGLE_SERVICES_FILE;
+  const androidGoogleServicesFile =
+    process.env.ANDROID_GOOGLE_SERVICES_FILE ||
+    process.env.EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES_FILE;
   return {
-    name: 'Chatwoot',
-    slug: process.env.EXPO_PUBLIC_APP_SLUG || 'chatwoot-mobile',
+    name: process.env.EXPO_PUBLIC_APP_NAME || 'Tekomi Chat',
+    slug: process.env.EXPO_PUBLIC_APP_SLUG || 'tekomi-chat',
     version: '4.9.3',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
-    scheme: 'chatwootapp',
+    scheme: 'tekomi-chat',
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.chatwoot.app',
+      bundleIdentifier: process.env.EXPO_PUBLIC_IOS_BUNDLE_IDENTIFIER || 'vn.tekomi.chat',
       infoPlist: {
         NSCameraUsageDescription:
           'This app requires access to the camera to upload images and videos.',
@@ -25,39 +37,44 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         ITSAppUsesNonExemptEncryption: false,
       },
       // Please use the relative path to the google-services.json file
-      googleServicesFile: process.env.EXPO_PUBLIC_IOS_GOOGLE_SERVICES_FILE,
+      googleServicesFile: iosGoogleServicesFile,
       entitlements: { 'aps-environment': 'production' },
-      associatedDomains: ['applinks:app.chatwoot.com'],
+      // Only enable Universal Links after this host serves a valid apple-app-site-association file.
+      associatedDomains: appLinkHost ? [`applinks:${appLinkHost}`] : [],
     },
     android: {
       adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#ffffff' },
-      package: 'com.chatwoot.app',
+      package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE || 'vn.tekomi.chat',
       permissions: [
         'android.permission.CAMERA',
         'android.permission.RECORD_AUDIO',
         'android.permission.POST_NOTIFICATIONS',
       ],
       // Please use the relative path to the google-services.json file
-      googleServicesFile: process.env.EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES_FILE,
+      googleServicesFile: androidGoogleServicesFile,
       intentFilters: [
+        ...(appLinkHost
+          ? [
+              {
+                action: 'VIEW' as const,
+                autoVerify: true,
+                data: [
+                  {
+                    scheme: 'https',
+                    host: appLinkHost,
+                    pathPrefix: '/app/accounts/',
+                    pathPattern: '/*/conversations/*',
+                  },
+                ],
+                category: ['BROWSABLE', 'DEFAULT'],
+              },
+            ]
+          : []),
         {
           action: 'VIEW',
-          autoVerify: true,
           data: [
             {
-              scheme: 'https',
-              host: 'app.chatwoot.com',
-              pathPrefix: '/app/accounts/',
-              pathPattern: '/*/conversations/*',
-            },
-          ],
-          category: ['BROWSABLE', 'DEFAULT'],
-        },
-        {
-          action: 'VIEW',
-          data: [
-            {
-              scheme: 'chatwootapp',
+              scheme: 'tekomi-chat',
             },
           ],
           category: ['BROWSABLE', 'DEFAULT'],
@@ -65,12 +82,21 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
     },
     extra: {
+      // These public values pin this mobile binary to the intended PBX. TURN credentials
+      // and the shared secret deliberately stay server-side and are minted per user by
+      // GET /inboxes/:id/phone_credentials.
+      phoneNetwork: {
+        wssUrl: 'wss://wss.td1.tekomi.vn',
+        sipDomain: 'td1.tekomi.vn',
+        stunUrls: ['stun:td1.tekomi.vn:3478'],
+        turnUrls: ['turn:td1.tekomi.vn:3478?transport=udp'],
+      },
       eas: {
-        projectId: process.env.EXPO_PUBLIC_PROJECT_ID,
+        projectId: easProjectId,
         storybookEnabled: process.env.EXPO_STORYBOOK_ENABLED,
       },
     },
-    owner: 'chatwoot',
+    owner: easOwner,
     plugins: [
       'expo-font',
       'expo-image',
