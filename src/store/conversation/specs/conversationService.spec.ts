@@ -105,4 +105,15 @@ describe('ConversationService', () => {
     expect(apiService.post).toHaveBeenCalledWith('conversations/1/messages/12/retry');
     expect(result).toEqual({ id: 12 });
   });
+
+  it('should queue a conversation ticket through the Chatwoot backend', async () => {
+    await ConversationService.sendConversationToExternalSystem({
+      conversationId: 1,
+      note: 'Customer requests a follow-up.',
+    });
+
+    expect(apiService.post).toHaveBeenCalledWith('conversations/1/external_ticket', {
+      note: 'Customer requests a follow-up.',
+    });
+  });
 });

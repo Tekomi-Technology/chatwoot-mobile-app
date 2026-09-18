@@ -14,7 +14,7 @@
   },
   "CONFIGURE_URL": {
     "ENTER_URL": "URL cài đặt",
-    "DESCRIPTION": "Nếu bạn đang dùng Chatwoot tự chủ, điền URL máy chủ của bạn. Nếu không, dùng app.chatwoot.com.",
+    "DESCRIPTION": "Nếu bạn đang dùng TConnect tự chủ, điền URL máy chủ của bạn. Nếu không, dùng app.chatwoot.com.",
     "URL_ERROR": "Điền URL hợp lệ",
     "URL_REQUIRED": "URL bắt buộc có",
     "CONNECT": "Kết nối",
@@ -130,6 +130,21 @@
     "ASSIGNED_AGENT": "Đại lý được phân công",
     "TEAM": "Nhóm",
     "PRIVATE_MSG_INPUT": "Chỉ hiện cho nhà cung cấp",
+    "CRM_TICKET": {
+      "OPEN_ACTION": "Gửi ticket sang CRM",
+      "TITLE": "Gửi ticket sang CRM",
+      "DESCRIPTION": "Bản ghi hội thoại và ghi chú của bạn sẽ được gửi an toàn sang CRM.",
+      "NOTE_LABEL": "Ghi chú (không bắt buộc)",
+      "NOTE_PLACEHOLDER": "Bổ sung ngữ cảnh cho đội ngũ CRM",
+      "SEND_ACTION": "Gửi ticket",
+      "SENDING_ACTION": "Đang gửi...",
+      "SUCCESS_TITLE": "Đã xếp hàng gửi ticket",
+      "SUCCESS_MESSAGE": "Ticket đã được xếp hàng để gửi sang CRM. Hãy kiểm tra lại chi tiết hội thoại sau ít phút để xem kết quả.",
+      "NOT_LINKED_TITLE": "Liên hệ chưa được liên kết CRM",
+      "NOT_LINKED_MESSAGE": "Hãy liên kết liên hệ này với khách hàng CRM trên dashboard web trước khi gửi ticket.",
+      "ERROR_TITLE": "Không thể gửi ticket",
+      "ERROR_MESSAGE": "Không thể xếp hàng gửi ticket. Vui lòng thử lại."
+    },
     "UNSUPPORTED_MESSAGE": "This message is unsupported. You can view this message on the Facebook / Instagram app.",
     "NOT_FOUND": {
       "TITLE": "Unable to fetch conversation",
@@ -405,19 +420,19 @@
     "CHANGE_TEAMS": "Nhóm của cuộc trò chuyện đã được thay đổi"
   },
   "ERRORS": {
-    "COMMON_ERROR": "Could not connect to Chatwoot Server, Please try again later",
+    "COMMON_ERROR": "Could not connect to TConnect Server, Please try again later",
     "OfFLINE": "Bạn phải kết nối với Wi-fi hoặc mạng di động để trực tuyến trở lại",
     "CANNOT_FETCH": "Đã xảy ra lỗi khi lấy thông tin, vui lòng thử lại",
     "AUTH": "Tài khoản/Mật khẩu không đúng. Vui lòng thử lại",
-    "NO_ACCOUNTS_MESSAGE": "Bạn không có quyền truy cập vào bất kỳ tài khoản chatwoot nào"
+    "NO_ACCOUNTS_MESSAGE": "Bạn không có quyền truy cập vào bất kỳ tài khoản TConnect nào"
   },
   "SUCCESS": {
     "AUTH": "Đăng nhập thành công"
   },
   "SERVER_UPGRADE": {
     "TITLE": "Cần nâng cấp máy chủ",
-    "WARNING_FOR_AGENT": "Có vẻ như bạn đang dùng máy chủ Chatwoot không hỗ trợ ứng dụng di động. Vui lòng liên hệ với quản trị viên để nâng cấp server Chatwoot của bạn.",
-    "WARNING_FOR_ADMIN": "Có vẻ như bạn đang dùng máy chủ Chatwoot không hỗ trợ ứng dụng di động. Cần nâng cấp máy chủ lên phiên bản %{minimumVersion} hoặc lớn hơn."
+    "WARNING_FOR_AGENT": "Có vẻ như bạn đang dùng máy chủ TConnect không hỗ trợ ứng dụng di động. Vui lòng liên hệ với quản trị viên để nâng cấp server TConnect của bạn.",
+    "WARNING_FOR_ADMIN": "Có vẻ như bạn đang dùng máy chủ TConnect không hỗ trợ ứng dụng di động. Cần nâng cấp máy chủ lên phiên bản %{minimumVersion} hoặc lớn hơn."
   },
   "EXIT": {
     "TITLE": "Lối ra",

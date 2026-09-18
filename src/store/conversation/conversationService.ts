@@ -32,6 +32,7 @@ import type {
   TranslateMessagePayload,
   TranslateMessageAPIResponse,
   RetryMessagePayload,
+  SendConversationToExternalSystemPayload,
 } from './conversationTypes';
 
 import {
@@ -230,6 +231,18 @@ export class ConversationService {
   static async togglePriority(payload: TogglePriorityPayload): Promise<void> {
     const { conversationId, priority } = payload;
     await apiService.post(`conversations/${conversationId}/toggle_priority`, { priority });
+  }
+
+  /**
+   * Queues the custom Chatwoot backend job that delivers this conversation to
+   * the configured CRM. The CRM credentials intentionally never leave the
+   * server or the mobile app.
+   */
+  static async sendConversationToExternalSystem(
+    payload: SendConversationToExternalSystemPayload,
+  ): Promise<void> {
+    const { conversationId, note } = payload;
+    await apiService.post(`conversations/${conversationId}/external_ticket`, { note });
   }
 
   static async translateMessage(

@@ -14,7 +14,7 @@
   },
   "CONFIGURE_URL": {
     "ENTER_URL": "Installation URL",
-    "DESCRIPTION": "If you are using a self-hosted Chatwoot installation, input your server URL. Otherwise, use app.chatwoot.com.",
+    "DESCRIPTION": "If you are using a self-hosted TConnect installation, input your server URL. Otherwise, use app.chatwoot.com.",
     "URL_ERROR": "Enter a valid URL",
     "URL_REQUIRED": "URL is required",
     "CONNECT": "Connect",
@@ -152,6 +152,21 @@
     "ASSIGNED_AGENT": "Assigned agent",
     "TEAM": "Team",
     "PRIVATE_MSG_INPUT": "This will be visible only to Agents",
+    "CRM_TICKET": {
+      "OPEN_ACTION": "Send ticket to CRM",
+      "TITLE": "Send ticket to CRM",
+      "DESCRIPTION": "The conversation transcript and your note will be sent securely to the CRM.",
+      "NOTE_LABEL": "Note (optional)",
+      "NOTE_PLACEHOLDER": "Add context for the CRM team",
+      "SEND_ACTION": "Send ticket",
+      "SENDING_ACTION": "Sending...",
+      "SUCCESS_TITLE": "Ticket queued",
+      "SUCCESS_MESSAGE": "The ticket has been queued for delivery to CRM. Check the conversation details again in a moment for the result.",
+      "NOT_LINKED_TITLE": "Contact is not linked to CRM",
+      "NOT_LINKED_MESSAGE": "Link this contact to a CRM customer on the web dashboard before sending a ticket.",
+      "ERROR_TITLE": "Could not send ticket",
+      "ERROR_MESSAGE": "The ticket could not be queued. Please try again."
+    },
     "UNSUPPORTED_MESSAGE": "This message is unsupported. You can view this message on the Facebook / Instagram app.",
     "NOT_FOUND": {
       "TITLE": "Unable to fetch conversation",
@@ -458,12 +473,12 @@
     "CHANGE_TEAMS": "Conversation team changed"
   },
   "ERRORS": {
-    "COMMON_ERROR": "Could not connect to Chatwoot Server, Please try again later",
+    "COMMON_ERROR": "Could not connect to TConnect Server, Please try again later",
     "UNABLE_TO_OPEN_LINK": "Could not open this link",
     "OfFLINE": "You must connect to Wi-fi or a cellular network to get online again",
     "CANNOT_FETCH": "There was an error fetching the information, please try again",
     "AUTH": "Username / Password Incorrect. Please try again",
-    "NO_ACCOUNTS_MESSAGE": "You don't have access to any chatwoot accounts",
+    "NO_ACCOUNTS_MESSAGE": "You don't have access to any TConnect accounts",
     "UNEXPECTED_TITLE": "Something went wrong",
     "UNEXPECTED_DESCRIPTION": "The app ran into an unexpected problem. You can try again without restarting.",
     "TRY_AGAIN": "Try again"
@@ -473,8 +488,8 @@
   },
   "SERVER_UPGRADE": {
     "TITLE": "Server upgrade required",
-    "WARNING_FOR_AGENT": "It seems like you are using unsupported Chatwoot server for your mobile app. Please contact your admin to upgrade your Chatwoot server.",
-    "WARNING_FOR_ADMIN": "It seems like you are using unsupported Chatwoot server for your mobile app. Upgrading to server version %{minimumVersion} or later is required."
+    "WARNING_FOR_AGENT": "It seems like you are using unsupported TConnect server for your mobile app. Please contact your admin to upgrade your TConnect server.",
+    "WARNING_FOR_ADMIN": "It seems like you are using unsupported TConnect server for your mobile app. Upgrading to server version %{minimumVersion} or later is required."
   },
   "EXIT": {
     "TITLE": "Exit",

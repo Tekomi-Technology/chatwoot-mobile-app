@@ -14,11 +14,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     process.env.ANDROID_GOOGLE_SERVICES_FILE ||
     process.env.EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES_FILE;
   return {
-    name: process.env.EXPO_PUBLIC_APP_NAME || 'Tekomi Chat',
+    name: process.env.EXPO_PUBLIC_APP_NAME || 'TConnect',
     slug: process.env.EXPO_PUBLIC_APP_SLUG || 'tekomi-chat',
     version: '4.9.3',
     orientation: 'portrait',
-    icon: './assets/icon.png',
+    icon: './src/assets/images/logo-T.png',
     userInterfaceStyle: 'light',
     scheme: 'tekomi-chat',
     ios: {
@@ -43,7 +43,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       associatedDomains: appLinkHost ? [`applinks:${appLinkHost}`] : [],
     },
     android: {
-      adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundColor: '#ffffff' },
+      adaptiveIcon: {
+        foregroundImage: './src/assets/images/logo-T.png',
+        backgroundColor: '#ffffff',
+      },
       package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE || 'vn.tekomi.chat',
       permissions: [
         'android.permission.CAMERA',
@@ -104,7 +107,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         'expo-splash-screen',
         {
-          image: './assets/splash.png',
+          image: './src/assets/images/logo-T.png',
           resizeMode: 'contain',
           backgroundColor: '#ffffff',
           enableFullScreenImage_legacy: true,

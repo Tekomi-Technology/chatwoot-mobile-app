@@ -257,6 +257,11 @@ export interface TranslateMessagePayload {
   targetLanguage: string;
 }
 
+export interface SendConversationToExternalSystemPayload {
+  conversationId: number;
+  note: string;
+}
+
 export interface TranslateMessageAPIResponse {
   content: string;
 }

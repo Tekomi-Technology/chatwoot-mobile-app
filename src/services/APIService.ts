@@ -29,7 +29,7 @@ const isForPreviousAccount = (url?: string): boolean => {
   );
 };
 
-const CLIENT_NAME = 'Chatwoot Mobile';
+const CLIENT_NAME = 'TConnect Mobile';
 const CLIENT_VERSION = Constants.expoConfig?.version ?? 'unknown';
 
 function deviceHeaders(): Record<string, string> {

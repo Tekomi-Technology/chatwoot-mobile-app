@@ -8,7 +8,7 @@ import { AppErrorBoundary } from '@/components-next/error-boundary';
 
 import i18n from '@/i18n';
 
-const Chatwoot = () => {
+const TConnectApp = () => {
   useEffect(() => {
     const subscription = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -44,4 +44,4 @@ const Chatwoot = () => {
   );
 };
 
-export default Chatwoot;
+export default TConnectApp;
