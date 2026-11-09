@@ -22,8 +22,7 @@ import { InboxTypes } from '@/types/common/Channel';
 import { selectHasActiveCall, selectHasIncomingCall } from '@/store/call/callSelectors';
 import { getVoiceCallProvider } from '@/utils/inboxUtils';
 import { placeOutboundCall } from '@/utils/placeOutboundCall';
-import { getChannelIcon } from '@/utils';
-import { Channel } from '@/types';
+import { ChannelIcon } from '@/channel-icons';
 
 type ChatScreenHeaderProps = {
   name: string;
@@ -44,13 +43,16 @@ export const ChatHeaderContainer = (props: ChatScreenHeaderProps) => {
   const dashboardApps = useAppSelector(selectAllDashboardApps);
   const inboxId = conversation?.inboxId;
   const inbox = useAppSelector(state => (inboxId ? selectInboxById(state, inboxId) : undefined));
-  const channelIcon = inbox
-    ? getChannelIcon(
-        inbox.channelType as Channel,
-        inbox.medium || '',
-        conversation?.additionalAttributes?.type || '',
-      )
-    : null;
+  const channelIcon = inbox ? (
+    <ChannelIcon
+      channelType={inbox.channelType}
+      medium={inbox.medium}
+      provider={inbox.provider}
+      additionalType={conversation?.additionalAttributes?.type}
+      voiceEnabled={inbox.voiceEnabled}
+      size={16}
+    />
+  ) : null;
   const hasActiveCall = useAppSelector(selectHasActiveCall);
   const hasIncomingCall = useAppSelector(selectHasIncomingCall);
   const [isStartingCall, setIsStartingCall] = useState(false);

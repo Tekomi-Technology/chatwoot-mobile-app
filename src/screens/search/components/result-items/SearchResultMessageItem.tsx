@@ -82,9 +82,6 @@ export const SearchResultMessageItem = ({
                         channelType={channelType}
                         medium={medium}
                         additionalType={additionalType}
-                        avatarUrl={inbox.avatarUrl}
-                        name={inboxName}
-                        avatarSize="xs"
                         iconSize={10}
                       />
                     </Animated.View>

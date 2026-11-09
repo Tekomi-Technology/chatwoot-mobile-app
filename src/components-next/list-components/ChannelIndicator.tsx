@@ -12,7 +12,7 @@ type ChannelIndicatorProps = {
 };
 
 export const ChannelIndicator = (props: ChannelIndicatorProps) => {
-  const { channelType, medium = '', avatarUrl, name } = props.inbox;
+  const { channelType, medium = '', provider, voiceEnabled } = props.inbox;
   const { type = '' } = props.additionalAttributes || {};
 
   return (
@@ -21,9 +21,8 @@ export const ChannelIndicator = (props: ChannelIndicatorProps) => {
         channelType={channelType}
         medium={medium}
         additionalType={type}
-        avatarUrl={avatarUrl}
-        name={name}
-        avatarSize="xs"
+        provider={provider}
+        voiceEnabled={voiceEnabled}
         iconSize={16}
       />
     </NativeView>

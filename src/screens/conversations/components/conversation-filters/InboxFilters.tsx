@@ -43,14 +43,7 @@ const InboxCell = (props: InboxCellProps) => {
           !isLastItem ? 'border-b-[1px] border-blackA-A3' : '',
         )}>
         <Animated.View style={tailwind.style('flex-row items-center')}>
-          <InboxChannelIcon
-            channelType={value.channelType}
-            medium={value.medium}
-            avatarUrl={value.avatarUrl}
-            name={value.name}
-            avatarSize="sm"
-            iconSize={18}
-          />
+          <InboxChannelIcon channelType={value.channelType} medium={value.medium} iconSize={18} />
 
           <Animated.Text
             style={tailwind.style(

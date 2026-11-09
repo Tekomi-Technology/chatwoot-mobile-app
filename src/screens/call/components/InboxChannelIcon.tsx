@@ -1,11 +1,9 @@
 import React from 'react';
 
-import { Icon } from '@/components-next/common/icon';
-import { getChannelIcon } from '@/utils';
-import type { Channel } from '@/types';
+import { ChannelIcon } from '@/channel-icons';
 
 type InboxChannelIconProps = { channelType: string; medium: string; size: number };
 
 export const InboxChannelIcon = ({ channelType, medium, size }: InboxChannelIconProps) => (
-  <Icon icon={getChannelIcon(channelType as Channel, medium, '')} size={size} />
+  <ChannelIcon channelType={channelType} medium={medium} size={size} />
 );

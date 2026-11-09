@@ -122,7 +122,7 @@ export const ChatHeader = ({
               style={tailwind.style(
                 'flex-shrink flex-row items-center gap-1.5 h-8 pl-2 pr-3 rounded-lg bg-white border border-gray-300',
               )}>
-              {channelIcon ? <Icon icon={channelIcon} size={16} /> : null}
+              {channelIcon}
               <Animated.Text
                 numberOfLines={1}
                 style={tailwind.style(
