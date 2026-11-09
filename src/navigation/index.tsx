@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
 import {
   getMessaging,
@@ -19,6 +19,7 @@ import { OngoingCallBar } from '@/screens/call';
 import { isCallPush } from '@/utils/callNotifications';
 import i18n from 'i18n';
 import { navigationRef } from '@/utils/navigationUtils';
+import { takeNavigationSnapshot } from '@/theme/navigationSnapshot';
 import {
   displayForegroundNotification,
   findConversationLinkFromPush,
@@ -49,6 +50,8 @@ export const AppNavigationContainer = () => {
 
   const routeNameRef = useRef<string | undefined>(undefined);
   const dispatch = useAppDispatch();
+  // Set when this navigator is remounting for a theme change: resume where the user was.
+  const [restoredState] = useState(() => takeNavigationSnapshot());
 
   const installationUrl = useAppSelector(selectInstallationUrl);
   const locale = useAppSelector(selectLocale);
@@ -126,6 +129,9 @@ export const AppNavigationContainer = () => {
     },
     // getInitialURL: App starting up from deep link - handles SSO callbacks and push notifications
     async getInitialURL() {
+      // The launch URL never goes away; replaying it after a theme change would
+      // yank the user back to the conversation the app was opened with.
+      if (restoredState) return null;
       // Check if app was opened from a deep link
       const url = await Linking.getInitialURL();
 
@@ -245,6 +251,7 @@ export const AppNavigationContainer = () => {
   return (
     <NavigationContainer
       linking={linking}
+      initialState={restoredState}
       ref={navigationRef}
       onReady={() => {
         routeNameRef.current = navigationRef.current?.getCurrentRoute()?.name;

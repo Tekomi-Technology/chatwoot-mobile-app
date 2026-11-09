@@ -39,6 +39,7 @@ import {
   ChatIcon,
   ChatwootIcon,
   NotificationIcon,
+  PaletteIcon,
   PhoneOutlineIcon,
   SwitchIcon,
   TranslateIcon,
@@ -61,6 +62,7 @@ import { logout } from '@/store/auth/authSlice';
 import { authActions } from '@/store/auth/authActions';
 import {
   selectLocale,
+  selectTheme,
   selectIsChatwootCloud,
   selectPushToken,
 } from '@/store/settings/settingsSelectors';
@@ -78,6 +80,8 @@ import { inboxActions } from '@/store/inbox/inboxActions';
 import { InboxTypes } from '@/types/common/Channel';
 import { getVoipToken } from '@/services/voice/chatwootCalls';
 import { callActions } from '@/store/call/callActions';
+
+type AppearanceNavigation = { navigate: (screen: 'AppearanceScreen') => void };
 
 const appName = Application.applicationName;
 const appVersion = Application.nativeApplicationVersion;
@@ -160,6 +164,7 @@ const SettingsScreen = () => {
   const enableAccountSwitch = accounts.length > 1;
 
   const activeLocale = useSelector(selectLocale);
+  const themeMode = useSelector(selectTheme);
   const {
     userAvailabilityStatusSheetRef,
     languagesModalSheetRef,
@@ -276,6 +281,16 @@ const SettingsScreen = () => {
       subtitleType: 'light',
       disabled: !hasConversationPermission,
       onPressListItem: () => setZaloChannelsVisible(true),
+    },
+    {
+      hasChevron: true,
+      title: i18n.t('APPEARANCE.TITLE'),
+      icon: <PaletteIcon />,
+      subtitle: i18n.t(`APPEARANCE.MODE_${themeMode.toUpperCase()}`),
+      subtitleType: 'light',
+      // Not a typed route of the tab navigator, which is what useNavigation() sees here.
+      onPressListItem: () =>
+        (navigation as unknown as AppearanceNavigation).navigate('AppearanceScreen'),
     },
     {
       hasChevron: true,

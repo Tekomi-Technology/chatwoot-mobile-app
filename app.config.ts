@@ -19,7 +19,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     version: '4.10.6',
     orientation: 'portrait',
     icon: './src/assets/images/logo-T.png',
-    userInterfaceStyle: 'light',
+    userInterfaceStyle: 'automatic',
     scheme: 'tekomi-chat',
     ios: {
       supportsTablet: true,

@@ -6,6 +6,7 @@ import { store, persistor } from './store';
 import { AppNavigator } from '@/navigation';
 import { AppErrorBoundary } from '@/components-next/error-boundary';
 
+import { ThemeProvider } from '@/theme/ThemeProvider';
 import i18n from '@/i18n';
 
 const TConnectApp = () => {
@@ -33,9 +34,11 @@ const TConnectApp = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <AppErrorBoundary>
-          <AppNavigator />
-        </AppErrorBoundary>
+        <ThemeProvider>
+          <AppErrorBoundary>
+            <AppNavigator />
+          </AppErrorBoundary>
+        </ThemeProvider>
       </PersistGate>
     </Provider>
   );

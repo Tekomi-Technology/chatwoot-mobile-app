@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '@/store';
+import { sanitizeAppearance } from '@/theme/appearanceConfig';
 
 export const selectSettings = (state: RootState) => state.settings;
 
@@ -32,6 +33,11 @@ export const selectNotificationSettings = createSelector(
 export const selectWebSocketUrl = createSelector(selectSettings, settings => settings.webSocketUrl);
 
 export const selectTheme = createSelector(selectSettings, settings => settings.theme);
+
+/** Light/dark preference together with the user's colour, corner and type choices. */
+export const selectAppearance = createSelector(selectSettings, settings =>
+  sanitizeAppearance({ ...settings.appearance, mode: settings.theme }),
+);
 
 export const selectIsChatwootCloud = createSelector(selectSettings, settings =>
   settings.installationUrl.includes('app.chatwoot.com'),
