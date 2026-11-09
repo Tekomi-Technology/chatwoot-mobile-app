@@ -16,7 +16,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
   return {
     name: process.env.EXPO_PUBLIC_APP_NAME || 'T-Connect',
     slug: process.env.EXPO_PUBLIC_APP_SLUG || 'tekomi-chat',
-    version: '4.9.3',
+    version: '4.10.6',
     orientation: 'portrait',
     icon: './src/assets/images/logo-T.png',
     userInterfaceStyle: 'light',
@@ -33,7 +33,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           'This app requires access to the microphone for voice notes and secure calls.',
         NSAppleMusicUsageDescription:
           'This app does not use Apple Music, but a system API may require this permission.',
-        UIBackgroundModes: ['fetch', 'remote-notification', 'audio'],
+        UIBackgroundModes: ['fetch', 'remote-notification', 'audio', 'voip'],
         ITSAppUsesNonExemptEncryption: false,
       },
       // Please use the relative path to the google-services.json file
@@ -52,6 +52,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         'android.permission.CAMERA',
         'android.permission.RECORD_AUDIO',
         'android.permission.POST_NOTIFICATIONS',
+        'android.permission.USE_FULL_SCREEN_INTENT',
+        'android.permission.FOREGROUND_SERVICE',
+        'android.permission.FOREGROUND_SERVICE_MICROPHONE',
+        'android.permission.MANAGE_OWN_CALLS',
       ],
       // Please use the relative path to the google-services.json file
       googleServicesFile: androidGoogleServicesFile,
@@ -115,7 +119,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       ],
       [
         'react-native-permissions',
-        { iosPermissions: ['Camera', 'PhotoLibrary', 'MediaLibrary', 'Notifications'] },
+        {
+          iosPermissions: ['Camera', 'PhotoLibrary', 'MediaLibrary', 'Notifications', 'Microphone'],
+        },
       ],
       [
         '@sentry/react-native',
@@ -126,6 +132,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       'expo-web-browser',
+      '@config-plugins/react-native-webrtc',
       '@react-native-community/datetimepicker',
       '@react-native-firebase/app',
       '@react-native-firebase/messaging',
@@ -148,6 +155,5 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       './with-ios-modular-headers.js',
       '@config-plugins/react-native-webrtc',
     ],
-    androidNavigationBar: { backgroundColor: '#ffffff' },
   };
 };

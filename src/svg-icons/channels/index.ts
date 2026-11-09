@@ -5,3 +5,4 @@ export * from './WhatsApp';
 export * from './X';
 export * from './Zalo';
 export * from './Mail';
+export * from './Tiktok';

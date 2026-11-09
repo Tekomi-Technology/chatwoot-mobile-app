@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { CaretRight } from '@/svg-icons';
+import { CaretRight, TickIcon } from '@/svg-icons';
 import { tailwind } from '@/theme';
 import { GenericListType } from '@/types';
 import { Icon } from '@/components-next/common/icon';
@@ -20,14 +20,23 @@ type ListItemProps = {
 
 const ListItem = (props: ListItemProps) => {
   const { listItem, index, isLastItem } = props;
+  const isDisabled = listItem.inactive || listItem.locked;
 
   return (
     <Pressable
       onPress={() => listItem.onPressListItem && listItem.onPressListItem()}
       key={index}
+      disabled={isDisabled}
+      accessibilityRole={listItem.checked === undefined ? undefined : 'checkbox'}
+      accessibilityState={
+        listItem.checked === undefined
+          ? { disabled: isDisabled }
+          : { checked: listItem.checked, disabled: isDisabled }
+      }
       style={({ pressed }) => [
         tailwind.style(
           pressed ? 'bg-gray-100' : '',
+          listItem.inactive ? 'opacity-40' : '',
           index === 0 ? 'rounded-t-[13px]' : '',
           isLastItem ? 'rounded-b-[13px]' : '',
         ),
@@ -47,7 +56,8 @@ const ListItem = (props: ListItemProps) => {
           <Animated.View>
             <Animated.Text
               style={tailwind.style(
-                'text-base font-inter-420-20 leading-[22px] tracking-[0.16px] text-gray-950',
+                'text-base font-inter-420-20 leading-[22px] tracking-[0.16px]',
+                listItem.locked ? 'text-slate-900' : 'text-gray-950',
               )}>
               {listItem.title}
             </Animated.Text>
@@ -61,6 +71,17 @@ const ListItem = (props: ListItemProps) => {
               {listItem.subtitle}
             </Animated.Text>
             {listItem.hasChevron ? <Icon icon={<CaretRight />} size={20} /> : null}
+            {listItem.checked !== undefined ? (
+              <Animated.View
+                style={tailwind.style(
+                  'h-[22px] w-[22px] items-center justify-center rounded-[6px] border-[1.5px]',
+                  listItem.checked && listItem.locked ? 'bg-slate-600 border-slate-600' : '',
+                  listItem.checked && !listItem.locked ? 'bg-blue-800 border-blue-800' : '',
+                  !listItem.checked ? 'border-gray-600' : '',
+                )}>
+                {listItem.checked ? <Icon icon={<TickIcon stroke="#FFFFFF" />} size={14} /> : null}
+              </Animated.View>
+            ) : null}
           </Animated.View>
         </Animated.View>
       </Animated.View>

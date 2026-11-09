@@ -13,6 +13,7 @@ import {
 import { appReducer } from '@/store/reducers';
 import { setStore } from './storeAccessor';
 import { contactListenerMiddleware } from './contact/contactListener';
+import { callListenerMiddleware } from './call/callListener';
 import { repairPersistedWebSocketUrl } from './settings/settingsUtils';
 
 // Disable this in testing environment
@@ -28,7 +29,7 @@ const persistConfig = {
   storage: AsyncStorage,
   // SIP registration and call state are only valid while the native client is alive.
   // Persisting them would make a relaunched app look registered without a live SIP socket.
-  blacklist: ['phone'],
+  blacklist: ['phone', 'calls'],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   migrate: async (state: any) => {
     // If the stored version is older or doesn't exist, return initial state
@@ -42,7 +43,10 @@ const persistConfig = {
   },
 };
 
-const middlewares: Middleware[] = [contactListenerMiddleware.middleware];
+const middlewares: Middleware[] = [
+  contactListenerMiddleware.middleware,
+  callListenerMiddleware.middleware,
+];
 
 const rootReducer = (state: ReturnType<typeof appReducer>, action: AnyAction) => {
   if (action.type === 'auth/logout') {
@@ -73,6 +77,7 @@ export const store = configureStore({
           PURGE,
           REGISTER,
           'auth/setCurrentUserAvailability',
+          'auth/setCurrentUserWorkPreferences',
           'contact/updateContactsPresence',
         ],
       },

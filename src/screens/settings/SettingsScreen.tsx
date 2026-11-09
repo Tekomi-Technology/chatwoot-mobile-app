@@ -36,8 +36,10 @@ import { ZaloSessionSheet } from '@/screens/chat-screen/components/ZaloSessionSh
 import { LANGUAGES } from '@/constants';
 import { useRefsContext } from '@/context';
 import {
+  ChatIcon,
   ChatwootIcon,
   NotificationIcon,
+  PhoneOutlineIcon,
   SwitchIcon,
   TranslateIcon,
   ZaloFilledIcon,
@@ -47,8 +49,11 @@ import { GenericListType } from '@/types';
 import { useHaptic, useTabBarHeight } from '@/utils';
 import { SettingsHeader } from './SettingsHeader';
 import { DebugActions } from './components/DebugActions';
+import { WorkPausedNote } from './components/WorkPausedNote';
+import { useWorkPreferences } from './hooks/useWorkPreferences';
 import {
   selectCurrentUserAvailability,
+  selectSupportsWorkPreferences,
   selectUser,
   selectAccounts,
 } from '@/store/auth/authSelectors';
@@ -66,10 +71,13 @@ import AnalyticsHelper from '@/utils/analyticsUtils';
 import { PROFILE_EVENTS } from '@/constants/analyticsEvents';
 import { getUserPermissions } from '@/utils/permissionUtils';
 import { CONVERSATION_PERMISSIONS } from '@/constants/permissions';
+import { isVoiceCallEnabled } from '@/utils/inboxUtils';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { selectAllInboxes } from '@/store/inbox/inboxSelectors';
 import { inboxActions } from '@/store/inbox/inboxActions';
 import { InboxTypes } from '@/types/common/Channel';
+import { getVoipToken } from '@/services/voice/chatwootCalls';
+import { callActions } from '@/store/call/callActions';
 
 const appName = Application.applicationName;
 const appVersion = Application.nativeApplicationVersion;
@@ -131,6 +139,15 @@ const SettingsScreen = () => {
   };
 
   const isChatwootCloud = useAppSelector(selectIsChatwootCloud);
+  const hasVoiceInbox = useAppSelector(state => selectAllInboxes(state).some(isVoiceCallEnabled));
+  const supportsWorkPreferences = useAppSelector(selectSupportsWorkPreferences);
+  const showWorkPreferences = hasVoiceInbox && supportsWorkPreferences;
+  const isOnline = availabilityStatus === 'online';
+  const {
+    preferences: workPreferences,
+    isLocked: isWorkPreferenceLocked,
+    toggle: toggleWorkPreference,
+  } = useWorkPreferences();
 
   const chatwootInstance = isChatwootCloud ? `${appName} cloud` : `${appName} self-hosted`;
 
@@ -174,7 +191,7 @@ const SettingsScreen = () => {
   };
 
   const changeAccount = (accountId: number) => {
-    switchAccount(dispatch, accountId);
+    if (!switchAccount(dispatch, accountId)) return;
     navigation.dispatch(StackActions.replace('Tab'));
   };
 
@@ -201,21 +218,46 @@ const SettingsScreen = () => {
   // };
 
   const onClickLogout = useCallback(async () => {
+    // Server hangup requires the current session.
+    await dispatch(callActions.endLocalCalls()).catch(() => {});
     await AsyncStorage.removeItem('cwCookie');
     await RecentSearches.clearAll();
     await dispatch(settingsActions.removeDevice({ pushToken }));
+    const voipToken = getVoipToken();
+    if (voipToken) await dispatch(settingsActions.removeDevice({ pushToken: voipToken }));
     dispatch(logout());
   }, [dispatch, pushToken]);
 
-  const preferencesList: GenericListType[] = [
+  const availabilityList: GenericListType[] = [
     {
       hasChevron: true,
-      title: i18n.t('SETTINGS.CHANGE_AVAILABILITY'),
+      title: i18n.t('SETTINGS.STATUS'),
       icon: <SwitchIcon />,
-      subtitle: '',
+      subtitle: i18n.t(`AVAILABILITY.${availabilityStatus.toUpperCase()}`),
       subtitleType: 'light',
       onPressListItem: () => openSheet(),
     },
+    {
+      title: i18n.t('SETTINGS.RECEIVE_CONVERSATIONS'),
+      icon: <ChatIcon />,
+      checked: workPreferences.accepts_conversations,
+      disabled: !showWorkPreferences,
+      inactive: !isOnline,
+      locked: isWorkPreferenceLocked('accepts_conversations'),
+      onPressListItem: () => toggleWorkPreference('accepts_conversations'),
+    },
+    {
+      title: i18n.t('SETTINGS.RECEIVE_VOICE_CALLS'),
+      icon: <PhoneOutlineIcon stroke="#858585" />,
+      checked: workPreferences.accepts_calls,
+      disabled: !showWorkPreferences,
+      inactive: !isOnline,
+      locked: isWorkPreferenceLocked('accepts_calls'),
+      onPressListItem: () => toggleWorkPreference('accepts_calls'),
+    },
+  ];
+
+  const preferencesList: GenericListType[] = [
     {
       hasChevron: true,
       title: i18n.t('SETTINGS.NOTIFICATIONS'),
@@ -306,6 +348,10 @@ const SettingsScreen = () => {
               {email}
             </Animated.Text>
           </Animated.View>
+        </Animated.View>
+        <Animated.View style={tailwind.style('pt-6')}>
+          <SettingsList sectionTitle={i18n.t('SETTINGS.AVAILABILITY')} list={availabilityList} />
+          {showWorkPreferences && !isOnline && <WorkPausedNote />}
         </Animated.View>
         <Animated.View style={tailwind.style('pt-6')}>
           <SettingsList sectionTitle={i18n.t('SETTINGS.PREFERENCES')} list={preferencesList} />

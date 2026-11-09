@@ -4,6 +4,7 @@ import Animated from 'react-native-reanimated';
 
 import { InboxChannelIcon } from '@/components-next/list-components';
 import { tailwind } from '@/theme';
+import type { Channel } from '@/types';
 import type { Conversation } from '@/types/Conversation';
 import { HighlightedText } from '../shared/HighlightedText';
 import { useScaleAnimation } from '@/utils';
@@ -16,7 +17,7 @@ type SearchConversation = Conversation & {
   additionalAttributes?: { mailSubject?: string; emailSubject?: string; type?: string };
   inbox?: {
     name?: string;
-    channelType?: string;
+    channelType?: Channel;
     medium?: string;
     avatarUrl?: string;
     id?: number;

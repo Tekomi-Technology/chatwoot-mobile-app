@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Keyboard, TextInput } from 'react-native';
-import { KeyboardStickyView } from 'react-native-keyboard-controller';
+import {
+  KeyboardStickyView,
+  useReanimatedKeyboardAnimation,
+} from 'react-native-keyboard-controller';
 import Animated, {
   FadeIn,
   FadeOut,
@@ -52,9 +55,10 @@ import { ReplyWarning } from './ReplyWarning';
 import { CannedResponses } from './CannedResponses';
 import { AttachedMedia } from '../message-components/AttachedMedia';
 import { CommandOptionsMenu } from '../message-components/CommandOptionsMenu';
-import { SendMessagePayload } from '@/store/conversation/conversationTypes';
+import { AttachmentFile, SendMessagePayload } from '@/store/conversation/conversationTypes';
 import { TypingIndicator } from './TypingIndicator';
-import { getTypingUsersText } from '@/utils';
+import { getLastMessage, getTypingUsersText } from '@/utils';
+import { isVoiceCallMessage } from '@/utils/voiceCallRouting';
 import { selectTypingUsersByConversationId } from '@/store/conversation/conversationTypingSlice';
 import { Agent, CannedResponse, Conversation } from '@/types';
 import AnalyticsHelper from '@/utils/analyticsUtils';
@@ -103,6 +107,7 @@ const BottomSheetContent = () => {
   const hapticSelection = useHaptic();
   const dispatch = useAppDispatch();
   const { bottom } = useSafeAreaInsets();
+  const { progress: keyboardProgress } = useReanimatedKeyboardAnimation();
   const { messageListRef } = useRefsContext();
 
   // Selectors
@@ -119,7 +124,6 @@ const BottomSheetContent = () => {
     isAddMenuOptionSheetOpen,
     setAddMenuOptionSheetState,
     textInputRef,
-    isTextInputFocused,
     conversationId,
     isVoiceRecorderOpen,
     setIsVoiceRecorderOpen,
@@ -128,7 +132,9 @@ const BottomSheetContent = () => {
   } = useChatWindowContext();
 
   // Copilot
-  const copilotAbortRef = useRef<{ abort: () => void; unwrap: () => Promise<unknown> }>();
+  const copilotAbortRef = useRef<{ abort: () => void; unwrap: () => Promise<unknown> } | null>(
+    null,
+  );
   const isCopilotActive = useAppSelector(selectIsCopilotActive);
   const isGenerating = useAppSelector(selectIsGenerating);
   const generatedContent = useAppSelector(selectGeneratedContent);
@@ -175,14 +181,14 @@ const BottomSheetContent = () => {
 
   useEffect(() => {
     if (!lastEmail) return;
-    const {
-      contentAttributes: { email: emailAttributes = {} },
-    } = lastEmail;
+    const emailAttributes = lastEmail.contentAttributes?.email;
+    if (!emailAttributes) return;
 
     // Retrieve the email of the current conversation's sender
     const conversationContact = conversation?.meta?.sender?.email || '';
+    const from = emailAttributes.from ?? [];
     let cc = emailAttributes.cc ? [...emailAttributes.cc] : [];
-    let to = [];
+    let to: string[] = [];
 
     // there might be a situation where the current conversation will include a message from a third person,
     // and the current conversation contact is in CC.
@@ -194,8 +200,8 @@ const BottomSheetContent = () => {
 
     // If the last incoming message sender is different from the conversation contact, add them to the "to"
     // and add the conversation contact to the CC
-    if (!emailAttributes.from.includes(conversationContact)) {
-      to.push(...emailAttributes.from);
+    if (!from.includes(conversationContact)) {
+      to.push(...from);
       cc.push(conversationContact);
     }
 
@@ -216,33 +222,44 @@ const BottomSheetContent = () => {
     conversation: conversation as Conversation,
   });
 
+  const [opensOnCall, setOpensOnCall] = useState<boolean>();
   useEffect(() => {
-    if (canReply || (inbox && (isAWhatsAppChannel(inbox) || isAZaloChannel(inbox)))) {
+    if (opensOnCall !== undefined || !conversation) return;
+    const lastMessage = getLastMessage(conversation);
+    setOpensOnCall(isVoiceCallMessage(lastMessage));
+  }, [conversation, opensOnCall]);
+
+  const canSendReply =
+    !!canReply || (!!inbox && (isAWhatsAppChannel(inbox) || isAZaloChannel(inbox)));
+  useEffect(() => {
+    if (canSendReply) {
       setReplyEditorMode(REPLY_EDITOR_MODES.REPLY);
-      dispatch(togglePrivateMessage(false));
+      dispatch(togglePrivateMessage(!!opensOnCall));
     } else {
       setReplyEditorMode(REPLY_EDITOR_MODES.NOTE);
       dispatch(togglePrivateMessage(true));
       dispatch(setQuoteMessage(null));
     }
-  }, [inbox, canReply, dispatch]);
+  }, [canSendReply, opensOnCall, dispatch]);
 
   // Clear quote state when switching conversations to prevent cross-conversation replies
   useEffect(() => {
     dispatch(setQuoteMessage(null));
   }, [conversationId, dispatch]);
 
-  const derivedAddMenuOptionStateValue = useDerivedValue(() => {
+  const derivedAddMenuOptionStateValue = useDerivedValue<number>(() => {
     return isAddMenuOptionSheetOpen
       ? withSpring(1, SHEET_APPEAR_SPRING_CONFIG)
       : withSpring(0, SHEET_APPEAR_SPRING_CONFIG);
   });
 
+  // The bottom inset gives way to the keyboard as it opens, since the keyboard height
+  // already covers the home indicator or navigation bar.
   const animatedInputWrapperStyle = useAnimatedStyle(
     () => ({
-      marginBottom: isTextInputFocused ? 0 : bottom,
+      marginBottom: bottom * (1 - keyboardProgress.value),
     }),
-    [isTextInputFocused],
+    [bottom],
   );
 
   const handleShowAddMenuOption = () => {
@@ -337,7 +354,7 @@ const BottomSheetContent = () => {
     return messagePayload;
   };
 
-  const getMessagePayload = (message: string, audioFile: File | null) => {
+  const getMessagePayload = (message: string, audioFile: AttachmentFile | null) => {
     let updatedMessage = message;
     if (isPrivate) {
       const regex = /@\[([\w\s]+)\]\((\d+)\)/g;
@@ -397,11 +414,11 @@ const BottomSheetContent = () => {
     return messagePayload;
   };
 
-  const onRecordingComplete = async (audioFile: File | null) => {
+  const onRecordingComplete = async (audioFile: AttachmentFile | null) => {
     confirmOnSendReply(audioFile);
   };
 
-  const confirmOnSendReply = (audioFile: File | null) => {
+  const confirmOnSendReply = (audioFile: AttachmentFile | null) => {
     hapticSelection?.();
     if (textInputRef && 'current' in textInputRef && textInputRef.current) {
       (textInputRef.current as TextInput).clear();

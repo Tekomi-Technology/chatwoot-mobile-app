@@ -19,7 +19,8 @@ export type ContentType =
   | 'input_csat'
   | 'integrations'
   | 'sticker'
-  | 'phone_call';
+  | 'phone_call'
+  | 'voice_call';
 
 export type PhoneCallMessageData = {
   phoneCallId?: number;
@@ -58,11 +59,53 @@ export type ImageMetadata = {
   fileType: 'image' | 'video' | 'audio' | 'file' | 'ig_reel';
   accountId: number;
   extension: string | null;
+  contentType?: string | null;
   dataUrl: string;
   thumbUrl: string;
+  fileSize?: number;
   fallbackTitle: string;
   coordinatesLat: number;
   coordinatesLong: number;
+};
+
+export type VoiceCallProvider = 'twilio' | 'whatsapp';
+
+export type VoiceCallStatus =
+  | 'ringing'
+  | 'in-progress'
+  | 'completed'
+  | 'no-answer'
+  | 'failed'
+  | 'rejected';
+
+export type MessageCall = {
+  id: number;
+  providerCallId: string;
+  provider: VoiceCallProvider;
+  direction: 'incoming' | 'outgoing' | 'inbound' | 'outbound';
+  status: VoiceCallStatus;
+  providerStatus?: string | null;
+  durationSeconds: number | null;
+  endReason: string | null;
+  conferenceSid: string | null;
+  acceptedByAgentId: number | null;
+  acceptedByAgentName: string | null;
+  startedAt: UnixTimestamp | null;
+  endedAt: UnixTimestamp | null;
+  fromNumber: string | null;
+  toNumber: string | null;
+  recordingUrl: string | null;
+  transcript: string | null;
+};
+
+export type VoiceCallContentData = {
+  callId?: number;
+  callSid?: string;
+  callSource?: VoiceCallProvider;
+  callDirection?: 'inbound' | 'outbound';
+  status?: string;
+  acceptedBy?: { id: number; name: string };
+  durationSeconds?: number;
 };
 
 export type MessageContentAttributes = {
@@ -89,7 +132,7 @@ export type MessageContentAttributes = {
   contentType: ContentType;
   isUnsupported: boolean;
   translations?: Record<string, string>;
-  data?: PhoneCallMessageData;
+  data?: PhoneCallMessageData & VoiceCallContentData;
 };
 
 export interface Message {
@@ -98,6 +141,7 @@ export interface Message {
   content: string;
   contentAttributes?: MessageContentAttributes | null;
   contentType: ContentType;
+  call?: MessageCall | null;
   conversationId: number;
   createdAt: UnixTimestamp;
   echoId: number | string | null;
@@ -110,7 +154,7 @@ export interface Message {
   lastNonActivityMessage: Message | null;
   conversation?: Conversation | null;
   shouldRenderAvatar?: boolean | false;
-  senderId: number;
+  senderId?: number;
   groupWithNext?: boolean | false;
   groupWithPrevious?: boolean | false;
   senderType?: string;

@@ -337,7 +337,11 @@ export const conversationActions = {
     },
   ),
   translateMessage: createAsyncThunk<
-    TranslateMessageAPIResponse & { conversationId: number; messageId: number; targetLanguage: string },
+    TranslateMessageAPIResponse & {
+      conversationId: number;
+      messageId: number;
+      targetLanguage: string;
+    },
     TranslateMessagePayload
   >('conversations/translateMessage', async (payload, { rejectWithValue }) => {
     try {
