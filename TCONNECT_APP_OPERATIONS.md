@@ -472,3 +472,58 @@ When asking another developer/agent to continue, provide the repository path, th
 the exact error log. Never provide passwords or private key contents. Rotate any credential that has been
 printed in a terminal transcript, chat message, commit, or log.
 
+
+## 15. Upstream sync, appearance and channel icons (added with version 4.10.6)
+
+### 15.1 Syncing with upstream Chatwoot
+
+~~~bash
+git remote add upstream https://github.com/chatwoot/chatwoot-mobile-app.git   # once
+git fetch upstream
+git checkout -b sync/upstream-<version>
+git merge upstream/develop
+~~~
+
+Branch `sync/upstream-4.10.6` was merged this way. Conflicts were resolved to keep T-Connect's name/slug,
+pnpm version, SIP softphone (`phone` store, `PHONE_CALL`) next to upstream's native voice calls (`calls`
+store, `VOICE_CALL`). `UIBackgroundModes` now includes `voip`; the iOS and Android native projects changed,
+so a new native build (not an OTA update) is required.
+
+pnpm 11 needs the `node:sqlite` module. On Node 23.3 prefix commands with
+`NODE_OPTIONS="--experimental-sqlite"`, or use Node >= 23.4 / 22.13+. Corepack was broken on this machine;
+`npx pnpm@11.9.0 ...` works.
+
+### 15.2 Appearance (Settings > Appearance)
+
+Users choose mode (system/light/dark), a style preset, an accent colour (swatches or any hex), corner
+roundness and text size. Code lives in `src/theme/`:
+
+- `accent.ts` builds a full 50-950 colour scale from one hex (the hex lands on step 700).
+- `createTheme.ts` builds the twrnc instance for a look (dark palette, accent, radius, font scale).
+- `tailwind.ts` exports `tailwind` as a proxy to the active look, so existing `tailwind.style(...)` calls
+  follow the theme. `ThemeProvider.tsx` remounts the tree once per change and restores the current screen.
+- State: `settings.theme` (mode) and `settings.appearance` (rest), persisted by redux-persist.
+
+Known limits: dark mode is derived from the Radix dark palette plus class rewrites. Colours hard-coded in a
+component (`#...` literals, `bg-[#...]`) do not follow it. Check every screen on a device in dark mode.
+
+### 15.3 Workspace branding (optional)
+
+If the Chatwoot server serves `https://<server>/mobile-theme.json`, users who keep "Use workspace colors" on
+get that accent. Only `accent` is read:
+
+~~~json
+{ "accent": "#7C5CFC" }
+~~~
+
+Put the file in the web repo's `public/` folder. A 404 means no workspace branding.
+
+### 15.4 Channel icons synced with the web
+
+The web draws channel icons from Iconify data compiled at build time, so the server does not expose them.
+`chatwoot/scripts/generate-channel-icons.mjs` reads the web's own icon tables and writes
+`chatwoot/public/channel-icons.json`. The app fetches `<server>/channel-icons.json`, caches it, and falls back
+to its bundled icons if the file is missing.
+
+After the web changes a channel icon: `node scripts/generate-channel-icons.mjs` in the web repo, then deploy
+`public/channel-icons.json`. Until it is deployed, the app shows its bundled icons.
