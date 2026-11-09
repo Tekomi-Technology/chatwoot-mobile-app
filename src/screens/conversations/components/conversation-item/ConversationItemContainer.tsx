@@ -66,7 +66,7 @@ export const ConversationItemContainer = memo((props: ConversationItemContainerP
   const { conversationItem, index, openedRowIndex } = props;
   const {
     meta: {
-      sender: { name: senderName, thumbnail: senderThumbnail, id: contactId },
+      sender: { name: senderName, thumbnail: senderThumbnail, id: contactId, vip: isVip },
       assignee,
     },
     id,
@@ -144,6 +144,7 @@ export const ConversationItemContainer = memo((props: ConversationItemContainerP
     unreadCount,
     isTyping,
     availabilityStatus: availabilityStatus || 'offline',
+    isVip,
     priority,
     labels,
     timestamp,

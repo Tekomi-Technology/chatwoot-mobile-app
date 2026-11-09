@@ -1,12 +1,14 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { ActivityIndicator, Linking, StyleSheet, View } from 'react-native';
 import {
   getMessaging,
   getInitialNotification,
+  onMessage,
   onNotificationOpenedApp,
   setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
 import { getStateFromPath } from '@react-navigation/native';
+import notifee, { EventType } from '@notifee/react-native';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -15,7 +17,11 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AppTabs } from './tabs/AppTabs';
 import i18n from 'i18n';
 import { navigationRef } from '@/utils/navigationUtils';
-import { findConversationLinkFromPush, findNotificationFromFCM } from '@/utils/pushUtils';
+import {
+  displayForegroundNotification,
+  findConversationLinkFromPush,
+  findNotificationFromFCM,
+} from '@/utils/pushUtils';
 import { extractConversationIdFromUrl } from '@/utils/conversationUtils';
 import { useAppSelector } from '@/hooks';
 import { selectInstallationUrl, selectLocale } from '@/store/settings/settingsSelectors';
@@ -53,6 +59,13 @@ export const AppNavigationContainer = () => {
   const installationUrl = useAppSelector(selectInstallationUrl);
   const locale = useAppSelector(selectLocale);
   const currentAccountId = useAppSelector(selectCurrentUserAccountId);
+
+  useEffect(() => {
+    const unsubscribe = onMessage(getMessaging(), remoteMessage => {
+      displayForegroundNotification({ message: remoteMessage });
+    });
+    return unsubscribe;
+  }, []);
 
   const linking = {
     prefixes: [installationUrl, SSO_CALLBACK_URL],
@@ -152,6 +165,21 @@ export const AppNavigationContainer = () => {
           }
         }
       }
+
+      const localNotification = await notifee.getInitialNotification();
+      if (localNotification?.notification?.data) {
+        const notification = findNotificationFromFCM({
+          message: { data: localNotification.notification.data },
+        });
+        if (notification) {
+          const conversationLink = findConversationLinkFromPush({
+            notification: transformNotification(notification),
+            installationUrl,
+            currentAccountId,
+          });
+          if (conversationLink) return conversationLink;
+        }
+      }
       return undefined;
     },
     // subscribe: App backgrounded, receives deep link - handles SSO callbacks and push notifications
@@ -189,9 +217,24 @@ export const AppNavigationContainer = () => {
         }
       });
 
+      const unsubscribeLocalNotification = notifee.onForegroundEvent(({ type, detail }) => {
+        if (type !== EventType.PRESS || !detail.notification?.data) return;
+        const notification = findNotificationFromFCM({
+          message: { data: detail.notification.data },
+        });
+        if (!notification) return;
+        const conversationLink = findConversationLinkFromPush({
+          notification: transformNotification(notification),
+          installationUrl,
+          currentAccountId,
+        });
+        if (conversationLink) listener(conversationLink);
+      });
+
       return () => {
         subscription.remove();
         unsubscribeNotification();
+        unsubscribeLocalNotification();
       };
     },
   };

@@ -47,4 +47,37 @@ describe('getFilteredConversations', () => {
 
     expect(source.map(({ id }) => id)).toEqual([1, 2]);
   });
+
+  it('always places VIP conversations before non-VIP conversations', () => {
+    const vip = {
+      ...conversation,
+      id: 4,
+      lastActivityAt: 1,
+      meta: { ...conversation.meta, sender: { ...conversation.meta.sender, vip: true } },
+    };
+    const newerNonVip = { ...conversation, id: 5, lastActivityAt: 10 };
+    const state = buildState({ 4: vip, 5: newerNonVip });
+
+    expect(
+      getFilteredConversations(state, { ...defaultFilterState, assignee_type: 'all' }, userId).map(
+        c => c.id,
+      ),
+    ).toEqual([4, 5]);
+  });
+
+  it('supports the server-side VIP filter without leaking non-VIP records', () => {
+    const vip = {
+      ...conversation,
+      id: 6,
+      meta: { ...conversation.meta, sender: { ...conversation.meta.sender, vip: true } },
+    };
+    const nonVip = { ...conversation, id: 7 };
+    const state = buildState({ 6: vip, 7: nonVip });
+
+    expect(
+      getFilteredConversations(state, { ...defaultFilterState, assignee_type: 'vip' }, userId).map(
+        c => c.id,
+      ),
+    ).toEqual([6]);
+  });
 });

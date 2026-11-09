@@ -4,7 +4,7 @@ export type AllStatusTypes = ConversationStatus | 'all';
 
 export type SortTypes = 'latest' | 'sort_on_created_at' | 'sort_on_priority';
 
-export type AssigneeTypes = 'me' | 'unassigned' | 'all';
+export type AssigneeTypes = 'me' | 'unassigned' | 'all' | 'vip';
 
 export type StatusCollection = { id: AllStatusTypes; icon: React.ReactNode };
 
@@ -12,6 +12,7 @@ export const AssigneeOptions: Record<AssigneeTypes, string> = {
   me: 'Mine',
   unassigned: 'Unassigned',
   all: 'All',
+  vip: 'VIP',
 };
 
 export const StatusOptions: Record<AllStatusTypes, string> = {

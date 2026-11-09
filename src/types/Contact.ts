@@ -2,6 +2,7 @@ import { type AvailabilityStatus } from './common/AvailabilityStatus';
 import { type UnixTimestamp } from './common/UnixTimestamp';
 
 export interface Contact {
+  vip?: boolean;
   additionalAttributes: {
     location?: string;
     companyName?: string;

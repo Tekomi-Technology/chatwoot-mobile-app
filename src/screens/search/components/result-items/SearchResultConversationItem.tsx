@@ -2,12 +2,11 @@ import React from 'react';
 import { Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import { Icon } from '@/components-next/common';
+import { InboxChannelIcon } from '@/components-next/list-components';
 import { tailwind } from '@/theme';
 import type { Conversation } from '@/types/Conversation';
 import { HighlightedText } from '../shared/HighlightedText';
 import { useScaleAnimation } from '@/utils';
-import { getChannelIcon } from '@/utils/getChannelIcon';
 import { LastActivityTime } from '@/screens/conversations/components/conversation-item/LastActivityTime';
 import { ConversationId } from '@/screens/conversations/components/conversation-item/ConversationId';
 
@@ -15,7 +14,13 @@ import { ConversationId } from '@/screens/conversations/components/conversation-
 type SearchConversation = Conversation & {
   contact?: { name?: string; email?: string };
   additionalAttributes?: { mailSubject?: string; emailSubject?: string; type?: string };
-  inbox?: { name?: string; channelType?: string; medium?: string; id?: number };
+  inbox?: {
+    name?: string;
+    channelType?: string;
+    medium?: string;
+    avatarUrl?: string;
+    id?: number;
+  };
 };
 
 type SearchResultConversationItemProps = {
@@ -76,7 +81,15 @@ export const SearchResultConversationItem = ({
                       style={tailwind.style(
                         'h-4 w-4 rounded-full bg-gray-100 items-center justify-center',
                       )}>
-                      <Icon icon={getChannelIcon(channelType, medium, additionalType)} size={10} />
+                      <InboxChannelIcon
+                        channelType={channelType as import('@/types').Channel}
+                        medium={medium}
+                        additionalType={additionalType}
+                        avatarUrl={inbox.avatarUrl}
+                        name={inboxName}
+                        avatarSize="xs"
+                        iconSize={10}
+                      />
                     </Animated.View>
                   )}
                   <Animated.Text

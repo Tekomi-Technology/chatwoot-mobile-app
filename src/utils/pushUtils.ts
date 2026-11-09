@@ -2,13 +2,12 @@ import { Platform } from 'react-native';
 import { NOTIFICATION_TYPES } from '@/constants';
 import { Notification } from '@/types/Notification';
 
-let notifee: typeof import('@notifee/react-native').default | undefined;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const notifee: typeof import('@notifee/react-native').default = require('@notifee/react-native')
+  .default as typeof import('@notifee/react-native').default;
 
-if (Platform.OS === 'ios') {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  notifee = require('@notifee/react-native')
-    .default as typeof import('@notifee/react-native').default;
-}
+// FCM notification payloads are not rendered by the OS while the app is in
+// the foreground, so Notifee is loaded on both platforms for the local banner.
 
 export const clearAllDeliveredNotifications = async () => {
   if (Platform.OS === 'ios' && notifee) {
@@ -20,6 +19,49 @@ export const updateBadgeCount = async ({ count = 0 }) => {
   if (Platform.OS === 'ios' && count >= 0 && notifee) {
     await notifee.setBadgeCount(count);
   }
+};
+
+type ForegroundPushMessage = {
+  notification?: { title?: string; body?: string };
+  data?: Record<string, unknown>;
+};
+
+export const displayForegroundNotification = async ({
+  message,
+}: {
+  message: ForegroundPushMessage;
+}) => {
+  if (!notifee) return;
+
+  const channelId = 'chatwoot-messages';
+  if (Platform.OS === 'android') {
+    await notifee.createChannel({
+      id: channelId,
+      name: 'Messages',
+      importance: 4,
+      sound: 'default',
+    });
+  }
+
+  await notifee.displayNotification({
+    title: message.notification?.title || 'New message',
+    body: message.notification?.body || 'You have a new conversation message',
+    data: Object.fromEntries(
+      Object.entries(message.data || {})
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [
+          key,
+          typeof value === 'string' ? value : (JSON.stringify(value) ?? String(value)),
+        ]),
+    ),
+    android:
+      Platform.OS === 'android'
+        ? { channelId, pressAction: { id: 'default' }, smallIcon: 'ic_launcher' }
+        : undefined,
+    ios: {
+      foregroundPresentationOptions: { alert: true, badge: true, sound: true },
+    },
+  });
 };
 
 export const findConversationLinkFromPush = ({

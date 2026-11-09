@@ -85,6 +85,10 @@ export const ASSIGNEE_TYPES = [
     key: 'all',
     name: 'All',
   },
+  {
+    key: 'vip',
+    name: 'VIP',
+  },
 ];
 
 export const CONVERSATION_STATUS = {
@@ -136,6 +140,8 @@ export const INBOX_TYPES = {
   SMS: 'Channel::Sms',
   INSTAGRAM: 'Channel::Instagram',
   TIKTOK: 'Channel::Tiktok',
+  ZALO_OA: 'Channel::ZaloOa',
+  ZALO_PERSONAL: 'Channel::ZaloPersonal',
 };
 
 export const INBOX_FEATURES = {

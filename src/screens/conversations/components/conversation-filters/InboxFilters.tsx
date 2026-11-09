@@ -7,15 +7,15 @@ import { TickIcon } from '@/svg-icons';
 import { tailwind } from '@/theme';
 import { useHaptic } from '@/utils';
 import { BottomSheetHeader, Icon } from '@/components-next/common';
+import { InboxChannelIcon } from '@/components-next/list-components';
 import { selectFilters, setFilters } from '@/store/conversation/conversationFilterSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { selectAllInboxes } from '@/store/inbox/inboxSelectors';
-import { getChannelIcon } from '@/utils';
 import { Channel } from '@/types';
 import i18n from '@/i18n';
 
 type InboxCellProps = {
-  value: { id: number; name: string; channelType: Channel; medium: string };
+  value: { id: number; name: string; channelType: Channel; medium: string; avatarUrl?: string };
   isLastItem: boolean;
 };
 
@@ -43,10 +43,13 @@ const InboxCell = (props: InboxCellProps) => {
           !isLastItem ? 'border-b-[1px] border-blackA-A3' : '',
         )}>
         <Animated.View style={tailwind.style('flex-row items-center')}>
-          <Icon
-            icon={getChannelIcon(value.channelType, value.medium, '')}
-            size={18}
-            style={tailwind.style('my-auto flex items-center justify-center')}
+          <InboxChannelIcon
+            channelType={value.channelType}
+            medium={value.medium}
+            avatarUrl={value.avatarUrl}
+            name={value.name}
+            avatarSize="sm"
+            iconSize={18}
           />
 
           <Animated.Text
@@ -81,6 +84,7 @@ export const InboxFilters = () => {
     name: inbox.name,
     channelType: inbox.channelType as Channel,
     medium: inbox.medium,
+    avatarUrl: inbox.avatarUrl,
   }));
 
   return (

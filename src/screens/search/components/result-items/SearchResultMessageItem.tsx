@@ -3,12 +3,12 @@ import { Pressable } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import { Icon } from '@/components-next/common';
+import { InboxChannelIcon } from '@/components-next/list-components';
 import { tailwind } from '@/theme';
 import type { Message } from '@/types/Message';
 import { HighlightedText } from '../shared/HighlightedText';
 import { useScaleAnimation } from '@/utils';
 import { getPlainText } from '@/utils/messageFormatterUtils';
-import { getChannelIcon } from '@/utils/getChannelIcon';
 import { LockIcon } from '@/svg-icons';
 import { useAppSelector } from '@/hooks';
 import { selectInboxById } from '@/store/inbox/inboxSelectors';
@@ -78,7 +78,15 @@ export const SearchResultMessageItem = ({
                       style={tailwind.style(
                         'h-4 w-4 rounded-full bg-gray-100 items-center justify-center',
                       )}>
-                      <Icon icon={getChannelIcon(channelType, medium, additionalType)} size={10} />
+                      <InboxChannelIcon
+                        channelType={channelType}
+                        medium={medium}
+                        additionalType={additionalType}
+                        avatarUrl={inbox.avatarUrl}
+                        name={inboxName}
+                        avatarSize="xs"
+                        iconSize={10}
+                      />
                     </Animated.View>
                   )}
                   <Animated.Text

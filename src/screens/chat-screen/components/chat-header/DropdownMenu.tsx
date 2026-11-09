@@ -10,6 +10,7 @@ import { tailwind } from '@/theme';
 export type DashboardList = {
   title: string;
   url?: string;
+  action?: () => void;
   onSelect: (url: string | undefined, title: string | undefined) => void;
 };
 
@@ -67,7 +68,8 @@ export const ChatDropdownMenu = (props: PropsWithChildren<ChatDropdownMenuProps>
           <Animated.View style={tailwind.style('py-1 pl-3')}>
             {dropdownMenuList?.map((option, index) => {
               const handleOnOptionSelect = () => {
-                option.onSelect(option.url, option.title);
+                option.action?.();
+                if (!option.action) option.onSelect(option.url, option.title);
 
                 setTimeout(() => {
                   closeSheet();
@@ -107,7 +109,8 @@ export const ChatDropdownMenu = (props: PropsWithChildren<ChatDropdownMenuProps>
       <DropdownMenu.Content>
         {dropdownMenuList.map(menuOption => {
           const handleOnOptionSelect = () => {
-            menuOption.onSelect(menuOption.url, menuOption.title);
+            menuOption.action?.();
+            if (!menuOption.action) menuOption.onSelect(menuOption.url, menuOption.title);
           };
           return (
             <DropdownMenuItem onSelect={handleOnOptionSelect} key={menuOption.title}>

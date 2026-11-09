@@ -52,6 +52,7 @@ export interface ConversationListMeta {
   mineCount: number;
   unassignedCount: number;
   allCount: number;
+  vipCount?: number;
 }
 
 export interface ConversationAdditionalAttributes {

@@ -85,7 +85,8 @@
         "OPTIONS": {
           "ME": "Me",
           "UNASSIGNED": "Chưa được phân công",
-          "ALL": "Tất cả"
+          "ALL": "Tất cả",
+          "VIP": "Khách VIP"
         }
       }
     },

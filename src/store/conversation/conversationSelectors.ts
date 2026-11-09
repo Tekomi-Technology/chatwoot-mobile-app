@@ -88,9 +88,11 @@ export const getFilteredConversations = createDraftSafeSelector(
 
     // Ids can outlive their record, so entries without one are dropped before
     // sorting. The copy keeps the sort off the memoized input array.
-    const sortedConversations = [...conversations]
-      .filter(Boolean)
-      .sort(comparator[sortType as keyof SortComparator]);
+    const sortedConversations = [...conversations].filter(Boolean).sort((a, b) => {
+      const vipOrder = Number(!!b.meta?.sender?.vip) - Number(!!a.meta?.sender?.vip);
+      if (vipOrder !== 0) return vipOrder;
+      return comparator[sortType as keyof SortComparator](a, b);
+    });
 
     if (assigneeType === 'me') {
       return sortedConversations.filter(conversation => {
@@ -108,6 +110,10 @@ export const getFilteredConversations = createDraftSafeSelector(
         const shouldFilter = shouldApplyFilters(conversation, filters);
         return isUnAssigned && shouldFilter;
       });
+    }
+
+    if (assigneeType === 'vip') {
+      return sortedConversations.filter(conversation => shouldApplyFilters(conversation, filters));
     }
 
     return sortedConversations.filter(conversation => {

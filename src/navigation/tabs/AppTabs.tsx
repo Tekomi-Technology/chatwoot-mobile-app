@@ -37,7 +37,6 @@ import { labelActions } from '@/store/label/labelActions';
 import actionCableConnector from '@/utils/actionCable';
 import { setCurrentState } from '@/store/conversation/conversationHeaderSlice';
 import AnalyticsHelper from '@/utils/analyticsUtils';
-import { clearAllDeliveredNotifications } from '@/utils/pushUtils';
 import { dashboardAppActions } from '@/store/dashboard-app/dashboardAppActions';
 import { customAttributeActions } from '@/store/custom-attribute/customAttributeActions';
 import { clearSelection } from '@/store/conversation/conversationSelectedSlice';
@@ -102,7 +101,6 @@ const Tabs = () => {
     dispatch(customAttributeActions.index());
     initAnalytics();
     initSentry();
-    initPushNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -111,10 +109,6 @@ const Tabs = () => {
       AnalyticsHelper.identify(user);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const initPushNotifications = useCallback(async () => {
-    clearAllDeliveredNotifications();
   }, []);
 
   const initSentry = useCallback(async () => {

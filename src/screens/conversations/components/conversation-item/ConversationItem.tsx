@@ -28,6 +28,7 @@ export type ConversationItemProps = {
   unreadCount: number;
   isTyping: boolean;
   availabilityStatus: AvailabilityStatus;
+  isVip?: boolean;
 
   priority?: ConversationPriority | null;
   labels: string[];
@@ -69,6 +70,7 @@ export const ConversationItem = memo(
     unreadCount,
     isTyping,
     availabilityStatus,
+    isVip = false,
     priority = null,
     labels,
     timestamp,
@@ -102,6 +104,7 @@ export const ConversationItem = memo(
             labels,
             assignee,
             senderName,
+            isVip,
             timestamp,
             inbox,
             lastMessage,

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PagerView, { PagerViewOnPageSelectedEvent } from 'react-native-pager-view';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -29,12 +29,17 @@ import { conversationActions } from '@/store/conversation/conversationActions';
 import { TAB_BAR_HEIGHT } from '@/constants';
 import { ErrorIcon } from '@/svg-icons';
 import { Button } from '@/components-next';
-import { ActivityIndicator, Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import i18n from '@/i18n';
 import { StackActions, useNavigation } from '@react-navigation/native';
 import { MacrosList } from './components/macros/MacrosList';
 import { WhatsAppTemplatesList } from './components/whatsapp-templates';
 import { macroActions } from '@/store/macro/macroActions';
+import { ConversationAnalysisSheet } from './components/ConversationAnalysisSheet';
+import { ZaloSessionSheet } from './components/ZaloSessionSheet';
+import { selectInboxById } from '@/store/inbox/inboxSelectors';
+import { inboxActions } from '@/store/inbox/inboxActions';
+import { InboxTypes } from '@/types/common/Channel';
 
 export const ChatWindow = (props: ChatScreenProps) => {
   return (
@@ -72,11 +77,14 @@ const ConversationPagerView = (props: ChatScreenProps) => {
 
 const ChatScreenWrapper = (props: ChatScreenProps) => {
   const dispatch = useAppDispatch();
+  const [isAnalysisVisible, setAnalysisVisible] = useState(false);
+  const [isZaloVisible, setZaloVisible] = useState(false);
   const { conversationId } = useChatWindowContext();
   const conversation = useAppSelector(state => selectConversationById(state, conversationId));
 
   const { meta: { sender: { name = '', thumbnail = '' } = {} } = {} } = conversation || {};
   const { inboxId } = conversation || {};
+  const inbox = useAppSelector(state => (inboxId ? selectInboxById(state, inboxId) : undefined));
 
   useEffect(() => {
     const inboxIds = inboxId ? [inboxId] : [];
@@ -88,7 +96,37 @@ const ChatScreenWrapper = (props: ChatScreenProps) => {
 
   return (
     <React.Fragment>
-      <ChatHeaderContainer name={name || ''} imageSrc={{ uri: thumbnail || '' }} />
+      <ChatHeaderContainer
+        name={name || ''}
+        imageSrc={{ uri: thumbnail || '' }}
+        onAnalysisPress={() => setAnalysisVisible(true)}
+        onZaloReconnectPress={() => setZaloVisible(true)}
+      />
+      <ConversationAnalysisSheet
+        conversationId={conversationId}
+        visible={isAnalysisVisible}
+        onClose={() => setAnalysisVisible(false)}
+      />
+      {inbox?.channelType === InboxTypes.ZALO_PERSONAL ? (
+        <ZaloSessionSheet
+          channelId={inbox.channelId}
+          visible={isZaloVisible}
+          onClose={() => setZaloVisible(false)}
+          onConnected={() => dispatch(inboxActions.fetchInboxes())}
+        />
+      ) : null}
+      {inbox?.channelType === InboxTypes.ZALO_PERSONAL && inbox.zaloSessionStatus === 'expired' ? (
+        <Pressable
+          onPress={() => setZaloVisible(true)}
+          style={tailwind.style('mx-3 mt-2 rounded-lg bg-amber-100 px-3 py-2')}>
+          <View style={tailwind.style('flex-row items-center justify-between')}>
+            <Text style={tailwind.style('text-sm text-amber-800')}>Zalo session đã hết hạn</Text>
+            <Text style={tailwind.style('text-sm font-inter-medium-24 text-amber-800')}>
+              Kết nối lại
+            </Text>
+          </View>
+        </Pressable>
+      ) : null}
       <ConversationPagerView {...props} />
     </React.Fragment>
   );

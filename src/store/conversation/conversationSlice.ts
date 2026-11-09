@@ -12,6 +12,7 @@ export interface ConversationState {
     mineCount: number;
     unassignedCount: number;
     allCount: number;
+    vipCount: number;
   };
   error: string | null;
   isLoadingConversations: boolean;
@@ -32,6 +33,7 @@ const initialState = conversationAdapter.getInitialState<ConversationState>({
     mineCount: 0,
     unassignedCount: 0,
     allCount: 0,
+    vipCount: 0,
   },
   error: null,
   isLoadingConversations: false,
@@ -203,7 +205,7 @@ const conversationSlice = createSlice({
         );
         state.isLoadingConversations = false;
         state.isAllConversationsFetched = conversations.length < 20 || false;
-        state.meta = meta;
+        state.meta = { ...meta, vipCount: meta.vipCount ?? 0 };
       })
       .addCase(conversationActions.fetchConversations.rejected, (state, { error }) => {
         state.isLoadingConversations = false;

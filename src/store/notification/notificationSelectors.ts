@@ -54,6 +54,11 @@ export const getFilteredNotifications = createDraftSafeSelector(
       asc: (a, b) => a.createdAt - b.createdAt,
       desc: (a, b) => b.createdAt - a.createdAt,
     };
-    return notifications.sort(comparator[sortOrder]);
+    return [...notifications].sort((a, b) => {
+      const vipOrder =
+        Number(!!b.primaryActor?.meta?.sender?.vip) - Number(!!a.primaryActor?.meta?.sender?.vip);
+      if (vipOrder !== 0) return vipOrder;
+      return comparator[sortOrder](a, b);
+    });
   },
 );

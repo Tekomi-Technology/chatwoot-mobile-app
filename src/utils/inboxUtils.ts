@@ -12,6 +12,8 @@ export const INBOX_FEATURE_MAP = {
     INBOX_TYPES.TELEGRAM,
     INBOX_TYPES.TIKTOK,
     INBOX_TYPES.API,
+    INBOX_TYPES.ZALO_OA,
+    INBOX_TYPES.ZALO_PERSONAL,
   ],
   [INBOX_FEATURES.REPLY_TO_OUTGOING]: [
     INBOX_TYPES.WEB,
@@ -20,6 +22,8 @@ export const INBOX_FEATURE_MAP = {
     INBOX_TYPES.TELEGRAM,
     INBOX_TYPES.TIKTOK,
     INBOX_TYPES.API,
+    INBOX_TYPES.ZALO_OA,
+    INBOX_TYPES.ZALO_PERSONAL,
   ],
 };
 
@@ -90,6 +94,16 @@ export const whatsAppAPIProvider = (inbox: Inbox | undefined) => {
 
 export const isAnInstagramChannel = (inbox: Inbox | undefined) => {
   return inbox?.channelType === INBOX_TYPES.INSTAGRAM;
+};
+
+export const isAZaloPersonalChannel = (inbox: Inbox | undefined) => {
+  return inbox?.channelType === INBOX_TYPES.ZALO_PERSONAL;
+};
+
+export const isAZaloChannel = (inbox: Inbox | undefined) => {
+  return (
+    inbox?.channelType === INBOX_TYPES.ZALO_PERSONAL || inbox?.channelType === INBOX_TYPES.ZALO_OA
+  );
 };
 
 export const inboxSupportsReplyTo = (inbox: Inbox | undefined) => {

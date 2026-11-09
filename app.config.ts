@@ -14,7 +14,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     process.env.ANDROID_GOOGLE_SERVICES_FILE ||
     process.env.EXPO_PUBLIC_ANDROID_GOOGLE_SERVICES_FILE;
   return {
-    name: process.env.EXPO_PUBLIC_APP_NAME || 'TConnect',
+    name: process.env.EXPO_PUBLIC_APP_NAME || 'T-Connect',
     slug: process.env.EXPO_PUBLIC_APP_SLUG || 'tekomi-chat',
     version: '4.9.3',
     orientation: 'portrait',

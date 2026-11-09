@@ -16,22 +16,29 @@ import { evaluateSLAStatus } from '@chatwoot/utils';
 import { resetSentMessage } from '@/store/conversation/sendMessageSlice';
 import { selectAllDashboardApps } from '@/store/dashboard-app/dashboardAppSlice';
 import { selectUser } from '@/store/auth/authSelectors';
+import { selectInboxById } from '@/store/inbox/inboxSelectors';
+import { InboxTypes } from '@/types/common/Channel';
 
 type ChatScreenHeaderProps = {
   name: string;
   imageSrc: ImageSourcePropType;
+  onAnalysisPress?: () => void;
+  onZaloReconnectPress?: () => void;
 };
 
 const REFRESH_INTERVAL = 60000;
 
 export const ChatHeaderContainer = (props: ChatScreenHeaderProps) => {
-  const { name, imageSrc } = props;
+  const { name, imageSrc, onAnalysisPress, onZaloReconnectPress } = props;
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { conversationId } = useChatWindowContext();
   const conversation = useAppSelector(state => selectConversationById(state, conversationId));
   const currentUser = useAppSelector(selectUser);
   const dashboardApps = useAppSelector(selectAllDashboardApps);
+  const inbox = useAppSelector(state =>
+    conversation?.inboxId ? selectInboxById(state, conversation.inboxId) : undefined,
+  );
 
   const appliedSla = conversation?.appliedSla;
 
@@ -101,19 +108,22 @@ export const ChatHeaderContainer = (props: ChatScreenHeaderProps) => {
     navigation.dispatch(navigateToScreen);
   };
 
-  const handleNavigation = (url?: string, title?: string) => {
-    if (url) {
-      const navigateToScreen = StackActions.push('Dashboard', {
-        url,
-        title,
-        conversation,
-        currentUser,
-      });
-      navigation.dispatch(navigateToScreen);
-    } else {
-      chatPagerView.current?.setPage(1);
-    }
-  };
+  const handleNavigation = useCallback(
+    (url?: string, title?: string) => {
+      if (url) {
+        const navigateToScreen = StackActions.push('Dashboard', {
+          url,
+          title,
+          conversation,
+          currentUser,
+        });
+        navigation.dispatch(navigateToScreen);
+      } else {
+        chatPagerView.current?.setPage(1);
+      }
+    },
+    [chatPagerView, conversation, currentUser, navigation],
+  );
 
   const toggleChatStatus = async () => {
     const updatedStatus =
@@ -147,9 +157,32 @@ export const ChatHeaderContainer = (props: ChatScreenHeaderProps) => {
           }
         : undefined,
       ...dashboardRoutes,
+      onAnalysisPress
+        ? {
+            title: 'Conversation analysis',
+            action: onAnalysisPress,
+            onSelect: handleNavigation,
+          }
+        : undefined,
+      inbox?.channelType === InboxTypes.ZALO_PERSONAL &&
+      inbox.zaloSessionStatus === 'expired' &&
+      onZaloReconnectPress
+        ? {
+            title: 'Reconnect Zalo',
+            action: onZaloReconnectPress,
+            onSelect: handleNavigation,
+          }
+        : undefined,
     ].filter((item): item is DashboardList => item !== undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagerViewIndex]);
+  }, [
+    dashboardRoutes,
+    handleNavigation,
+    inbox?.channelType,
+    inbox?.zaloSessionStatus,
+    onAnalysisPress,
+    onZaloReconnectPress,
+    pagerViewIndex,
+  ]);
 
   const sLAStatusText = () => {
     const upperCaseType = slaStatus?.type?.toUpperCase(); // FRT, NRT, or RT

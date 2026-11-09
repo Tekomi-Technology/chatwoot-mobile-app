@@ -30,10 +30,18 @@ import {
 } from '@/components-next';
 import { Sheet } from '@/components-next/common/sheet/Sheet';
 import { UserAvatar } from './components/UserAvatar';
+import { ZaloChannelsSheet } from './components/ZaloChannelsSheet';
+import { ZaloSessionSheet } from '@/screens/chat-screen/components/ZaloSessionSheet';
 
 import { LANGUAGES } from '@/constants';
 import { useRefsContext } from '@/context';
-import { ChatwootIcon, NotificationIcon, SwitchIcon, TranslateIcon } from '@/svg-icons';
+import {
+  ChatwootIcon,
+  NotificationIcon,
+  SwitchIcon,
+  TranslateIcon,
+  ZaloFilledIcon,
+} from '@/svg-icons';
 import { GenericListType } from '@/types';
 
 import { useHaptic, useTabBarHeight } from '@/utils';
@@ -59,6 +67,9 @@ import { PROFILE_EVENTS } from '@/constants/analyticsEvents';
 import { getUserPermissions } from '@/utils/permissionUtils';
 import { CONVERSATION_PERMISSIONS } from '@/constants/permissions';
 import { useAppDispatch, useAppSelector } from '@/hooks';
+import { selectAllInboxes } from '@/store/inbox/inboxSelectors';
+import { inboxActions } from '@/store/inbox/inboxActions';
+import { InboxTypes } from '@/types/common/Channel';
 
 const appName = Application.applicationName;
 const appVersion = Application.nativeApplicationVersion;
@@ -76,6 +87,8 @@ const SettingsScreen = () => {
   // const { bottom } = useSafeAreaInsets();
 
   const [showWidget, toggleWidget] = useState(false);
+  const [isZaloChannelsVisible, setZaloChannelsVisible] = useState(false);
+  const [isZaloPersonalVisible, setZaloPersonalVisible] = useState(false);
   const user = useSelector(selectUser);
   const {
     name,
@@ -92,7 +105,9 @@ const SettingsScreen = () => {
 
   const pushToken = useAppSelector(selectPushToken);
 
-  const userPermissions = getUserPermissions(user, activeAccountId);
+  const userPermissions = user ? getUserPermissions(user, activeAccountId ?? null) : [];
+  const inboxes = useAppSelector(selectAllInboxes);
+  const personalZaloInbox = inboxes.find(inbox => inbox.channelType === InboxTypes.ZALO_PERSONAL);
 
   const hasConversationPermission = CONVERSATION_PERMISSIONS.some(permission =>
     userPermissions.includes(permission),
@@ -210,6 +225,15 @@ const SettingsScreen = () => {
       disabled: !hasConversationPermission,
       onPressListItem: () => notificationPreferencesSheetRef.current?.present(),
       // onPressListItem: openSystemSettings,
+    },
+    {
+      hasChevron: true,
+      title: 'Zalo channels',
+      icon: <ZaloFilledIcon />,
+      subtitle: '',
+      subtitleType: 'light',
+      disabled: !hasConversationPermission,
+      onPressListItem: () => setZaloChannelsVisible(true),
     },
     {
       hasChevron: true,
@@ -334,6 +358,20 @@ const SettingsScreen = () => {
         <BottomSheetHeader headerText={i18n.t('SETTINGS.DEBUG_ACTIONS')} />
         <DebugActions />
       </Sheet>
+      <ZaloChannelsSheet
+        visible={isZaloChannelsVisible}
+        onClose={() => setZaloChannelsVisible(false)}
+        onConnectPersonal={() => {
+          setZaloChannelsVisible(false);
+          setTimeout(() => setZaloPersonalVisible(true), 200);
+        }}
+      />
+      <ZaloSessionSheet
+        channelId={personalZaloInbox?.channelId}
+        visible={isZaloPersonalVisible}
+        onClose={() => setZaloPersonalVisible(false)}
+        onConnected={() => dispatch(inboxActions.fetchInboxes())}
+      />
       {!!process.env.EXPO_PUBLIC_CHATWOOT_WEBSITE_TOKEN &&
         !!process.env.EXPO_PUBLIC_CHATWOOT_BASE_URL &&
         !!showWidget && (

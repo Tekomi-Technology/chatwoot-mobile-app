@@ -34,7 +34,7 @@ export type PrimaryActor = {
   priority?: ConversationPriority | null;
   meta: {
     assignee: User;
-    sender: User;
+    sender: User & { vip?: boolean };
   };
   inboxId: number;
   additionalAttributes: ConversationAdditionalAttributes;

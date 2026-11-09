@@ -27,6 +27,7 @@ type ConversationDetailSubCellProps = Pick<
   'id' | 'priority' | 'labels' | 'unreadCount' | 'inboxId' | 'slaPolicyId'
 > & {
   senderName: string | null;
+  isVip?: boolean;
   assignee: Agent | null;
   timestamp: number;
   lastMessage?: Message | null;
@@ -60,6 +61,7 @@ export const ConversationItemDetail = memo((props: ConversationDetailSubCellProp
     labels,
     assignee,
     senderName,
+    isVip = false,
     timestamp,
     slaPolicyId,
     lastMessage,
@@ -102,6 +104,13 @@ export const ConversationItemDetail = memo((props: ConversationDetailSubCellProp
             )}>
             {senderName}
           </Text>
+          {isVip ? (
+            <Text
+              accessibilityLabel="VIP"
+              style={tailwind.style('text-xs font-inter-medium-24 text-amber-700')}>
+              ★ VIP
+            </Text>
+          ) : null}
           <ConversationId id={conversationId} />
         </AnimatedNativeView>
         <AnimatedNativeView style={tailwind.style('flex flex-row items-center gap-2')}>

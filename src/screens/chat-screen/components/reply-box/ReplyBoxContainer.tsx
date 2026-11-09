@@ -23,6 +23,8 @@ import {
   isAWebWidgetInbox,
   isAPIInbox,
   isAnInstagramChannel,
+  isAZaloPersonalChannel,
+  isAZaloChannel,
 } from '@/utils';
 import { useAppDispatch, useAppSelector } from '@/hooks';
 import { MESSAGE_MAX_LENGTH, REPLY_EDITOR_MODES } from '@/constants';
@@ -215,7 +217,7 @@ const BottomSheetContent = () => {
   });
 
   useEffect(() => {
-    if (canReply || (inbox && isAWhatsAppChannel(inbox))) {
+    if (canReply || (inbox && (isAWhatsAppChannel(inbox) || isAZaloChannel(inbox)))) {
       setReplyEditorMode(REPLY_EDITOR_MODES.REPLY);
       dispatch(togglePrivateMessage(false));
     } else {
@@ -312,9 +314,7 @@ const BottomSheetContent = () => {
   const handleCopilotFollowUp = (message: string) => {
     if (followUpContext && message.trim().length > 0) {
       copilotAbortRef.current?.abort();
-      const promise = dispatch(
-        sendCopilotFollowUp({ followUpContext, message, conversationId }),
-      );
+      const promise = dispatch(sendCopilotFollowUp({ followUpContext, message, conversationId }));
       copilotAbortRef.current = promise;
       promise.unwrap().catch((err: { name?: string }) => {
         if (err?.name === 'AbortError') return;
@@ -457,7 +457,8 @@ const BottomSheetContent = () => {
       isAnEmailChannel(inbox) ||
       isATelegramChannel(inbox) ||
       isALineChannel(inbox) ||
-      isAnInstagramChannel(inbox));
+      isAnInstagramChannel(inbox) ||
+      isAZaloPersonalChannel(inbox));
 
   const maxLength = () => {
     if (isPrivate) {
@@ -513,7 +514,11 @@ const BottomSheetContent = () => {
       )}
 
       <Animated.View
-        layout={isCopilotActive ? undefined : LinearTransition.springify().mass(1).damping(29).stiffness(140)}
+        layout={
+          isCopilotActive
+            ? undefined
+            : LinearTransition.springify().mass(1).damping(29).stiffness(140)
+        }
         style={tailwind.style(
           `pb-2 border-t-[1px] border-t-blackA-A3 ${shouldShowReplyHeader ? 'pt-0' : 'pt-2'}`,
         )}>
@@ -551,7 +556,11 @@ const BottomSheetContent = () => {
         ) : null}
         {!isVoiceRecorderOpen ? (
           <Animated.View
-            layout={isCopilotActive ? undefined : LinearTransition.springify().mass(1).damping(15).stiffness(105)}
+            layout={
+              isCopilotActive
+                ? undefined
+                : LinearTransition.springify().mass(1).damping(15).stiffness(105)
+            }
             style={tailwind.style('flex flex-row px-1 items-end z-20 relative')}>
             {!isCopilotActive && attachmentsLength === 0 && shouldShowFileUpload && (
               <AddCommandButton

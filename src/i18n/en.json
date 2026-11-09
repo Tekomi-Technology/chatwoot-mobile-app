@@ -107,7 +107,8 @@
         "OPTIONS": {
           "ME": "Me",
           "UNASSIGNED": "Unassigned",
-          "ALL": "All"
+          "ALL": "All",
+          "VIP": "VIP"
         }
       }
     },
