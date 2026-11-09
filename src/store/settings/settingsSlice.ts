@@ -54,6 +54,7 @@ const initialState: SettingsState = {
     corners: DEFAULT_APPEARANCE.corners,
     fontScale: DEFAULT_APPEARANCE.fontScale,
     followWorkspace: DEFAULT_APPEARANCE.followWorkspace,
+    tabBarColor: DEFAULT_APPEARANCE.tabBarColor,
   },
   version: '',
   pushToken: '',
@@ -99,6 +100,7 @@ export const settingsSlice = createSlice({
         corners: preset.corners,
         fontScale: preset.fontScale,
         followWorkspace: current.followWorkspace,
+        tabBarColor: current.tabBarColor ?? null,
       };
     },
     resetAppearance: state => {
@@ -109,6 +111,7 @@ export const settingsSlice = createSlice({
         corners: DEFAULT_APPEARANCE.corners,
         fontScale: DEFAULT_APPEARANCE.fontScale,
         followWorkspace: DEFAULT_APPEARANCE.followWorkspace,
+        tabBarColor: DEFAULT_APPEARANCE.tabBarColor,
       };
     },
   },

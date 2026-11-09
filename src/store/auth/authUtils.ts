@@ -1,6 +1,6 @@
 import { AxiosError } from 'axios';
 import { showToast } from '@/utils/toastUtils';
-import I18n from '@/i18n';
+import { describeApiError } from '@/services/APIService';
 import type { ApiErrorResponse } from './authTypes';
 
 export const handleApiError = (error: unknown, customErrorMsg?: string) => {
@@ -23,7 +23,7 @@ export const handleApiError = (error: unknown, customErrorMsg?: string) => {
     }
   }
 
-  const message = customErrorMsg || I18n.t('ERRORS.COMMON_ERROR');
+  const message = customErrorMsg || describeApiError(error as AxiosError);
   showToast({ message });
   return { success: false, errors: [message] };
 };

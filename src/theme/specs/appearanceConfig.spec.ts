@@ -33,6 +33,7 @@ describe('sanitizeAppearance', () => {
       fontScale: 'large',
       presetId: CUSTOM_PRESET_ID,
       followWorkspace: false,
+      tabBarColor: null,
     });
   });
 

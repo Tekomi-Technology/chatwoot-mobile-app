@@ -55,6 +55,22 @@ export type AccountScopedRequestConfig = AxiosRequestConfig & {
 const namesItsAccount = (config?: AxiosRequestConfig) =>
   !!(config as AccountScopedRequestConfig | undefined)?.accountId;
 
+// While the app is in development the toast says which request failed and why, so a vague
+// "could not connect" can be traced to an endpoint. Set to false to restore the plain message.
+const SHOW_API_ERROR_DETAILS = true;
+
+export const describeApiError = (error: AxiosError): string => {
+  const base = I18n.t('ERRORS.COMMON_ERROR');
+  if (!SHOW_API_ERROR_DETAILS) return base;
+  const method = (error.config?.method ?? '?').toUpperCase();
+  const path = `/${(error.config?.url ?? '?').replace(/^\/+/, '')}`;
+  const status = error.response?.status;
+  const reason = status ? `HTTP ${status}` : `${error.code ?? 'NO_RESPONSE'}: ${error.message}`;
+  const serverMessage = error.response?.data as { error?: string; message?: string } | undefined;
+  const detail = serverMessage?.error ?? serverMessage?.message;
+  return `[API] ${method} ${path} -> ${reason}${detail ? ` (${String(detail).slice(0, 80)})` : ''}`;
+};
+
 class APIService {
   private static instance: APIService;
   private api = axios.create();
@@ -134,7 +150,7 @@ class APIService {
         } else {
           const quiet = (error.config as AccountScopedRequestConfig | undefined)?.quietStatuses;
           if (!quiet?.includes(error.response?.status ?? -1)) {
-            showToast({ message: I18n.t('ERRORS.COMMON_ERROR') });
+            showToast({ message: describeApiError(error) });
           }
         }
         return Promise.reject(error);

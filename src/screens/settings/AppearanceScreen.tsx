@@ -102,7 +102,12 @@ const Swatch = ({
       'h-10 w-10 rounded-full items-center justify-center border-2',
       selected ? 'border-gray-950' : 'border-transparent',
     )}>
-    <View style={[tailwind.style('h-7 w-7 rounded-full'), { backgroundColor: color }]} />
+    <View
+      style={[
+        tailwind.style('h-7 w-7 rounded-full border border-gray-300'),
+        { backgroundColor: color },
+      ]}
+    />
   </Pressable>
 );
 
@@ -258,6 +263,35 @@ export const AppearanceScreen = () => {
             </View>
           ) : null}
         </ScrollView>
+
+        <SectionTitle>{i18n.t('APPEARANCE.TABBAR')}</SectionTitle>
+        <Card>
+          <View accessibilityRole="radiogroup" style={tailwind.style('flex-row flex-wrap p-2')}>
+            <Swatch
+              color="#FFFFFF"
+              label={i18n.t('APPEARANCE.TABBAR_DEFAULT')}
+              selected={!appearance.tabBarColor}
+              onPress={() => dispatch(updateAppearance({ tabBarColor: null }))}
+            />
+            <Swatch
+              color={activeAccent}
+              label={i18n.t('APPEARANCE.TABBAR_ACCENT')}
+              selected={!!appearance.tabBarColor && appearance.tabBarColor === activeAccent}
+              onPress={() => dispatch(updateAppearance({ tabBarColor: activeAccent }))}
+            />
+            {['#111113', ...ACCENT_SWATCHES.filter(swatch => swatch !== STOCK_ACCENT)].map(
+              swatch => (
+                <Swatch
+                  key={swatch}
+                  color={swatch}
+                  label={swatch}
+                  selected={appearance.tabBarColor === swatch}
+                  onPress={() => dispatch(updateAppearance({ tabBarColor: swatch }))}
+                />
+              ),
+            )}
+          </View>
+        </Card>
 
         <SectionTitle>{i18n.t('APPEARANCE.ACCENT')}</SectionTitle>
         <Card>

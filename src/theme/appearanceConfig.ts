@@ -18,6 +18,8 @@ export type AppearanceSettings = {
   fontScale: FontScale;
   /** Use the colour the workspace publishes (mobile-theme.json) when there is one. */
   followWorkspace: boolean;
+  /** Bottom tab bar background as `#rrggbb`, or null for the standard bar. */
+  tabBarColor: string | null;
 };
 
 /** Optional branding the workspace admin publishes at `<server>/mobile-theme.json`. */
@@ -34,6 +36,7 @@ export const DEFAULT_APPEARANCE: AppearanceSettings = {
   corners: 'default',
   fontScale: 'default',
   followWorkspace: true,
+  tabBarColor: null,
 };
 
 /** Multiplier for the rounded-* scale. Fully round (pill) and square stay as they are. */
@@ -103,6 +106,7 @@ export const sanitizeAppearance = (
       typeof value.followWorkspace === 'boolean'
         ? value.followWorkspace
         : DEFAULT_APPEARANCE.followWorkspace,
+    tabBarColor: typeof value.tabBarColor === 'string' ? normalizeHex(value.tabBarColor) : null,
   };
 };
 
@@ -123,4 +127,13 @@ export const resolveColorScheme = (
 ): ColorScheme => {
   if (mode === 'light' || mode === 'dark') return mode;
   return systemScheme === 'dark' ? 'dark' : 'light';
+};
+
+/** Black or white, whichever reads better on the given `#rrggbb` background. */
+export const readableOn = (background: string): string => {
+  const hex = background.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const lin = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return luminance > 0.45 ? '#171717' : '#FFFFFF';
 };

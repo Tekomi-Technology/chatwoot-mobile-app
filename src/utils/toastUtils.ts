@@ -7,6 +7,7 @@ interface ToastParams {
 export const showToast = ({ message }: ToastParams): void => {
   Snackbar.show({
     text: message,
-    duration: Snackbar.LENGTH_SHORT,
+    duration: Snackbar.LENGTH_LONG,
+    numberOfLines: 4,
   });
 };

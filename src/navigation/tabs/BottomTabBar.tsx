@@ -23,6 +23,8 @@ import {
   PhoneIconOutline,
 } from '@/svg-icons';
 import { tailwind } from '@/theme';
+import { useTheme } from '@/theme/ThemeProvider';
+import { readableOn } from '@/theme/appearanceConfig';
 import { useHaptic, useScaleAnimation, useTabBarHeight } from '@/utils';
 
 import { TabParamList } from './AppTabs';
@@ -36,16 +38,27 @@ type TabBarIconsProps = {
   route: RouteProp<TabParamList, keyof TabParamList>;
 };
 
+const useTabIconColor = () => {
+  const { appearance, isDark } = useTheme();
+  if (appearance.tabBarColor) return readableOn(appearance.tabBarColor);
+  return isDark ? '#EDEDED' : '#171717';
+};
+
 const TabBarIcons = ({ focused, route }: TabBarIconsProps) => {
+  const color = useTabIconColor();
   switch (route.name) {
     case 'Conversations':
-      return focused ? <ConversationIconFilled /> : <ConversationIconOutline />;
+      return focused ? (
+        <ConversationIconFilled color={color} />
+      ) : (
+        <ConversationIconOutline color={color} />
+      );
     case 'Inbox':
-      return focused ? <InboxIconFilled /> : <InboxIconOutline />;
+      return focused ? <InboxIconFilled color={color} /> : <InboxIconOutline color={color} />;
     case 'Phone':
-      return focused ? <PhoneIconFilled /> : <PhoneIconOutline />;
+      return focused ? <PhoneIconFilled color={color} /> : <PhoneIconOutline color={color} />;
     case 'Settings':
-      return focused ? <SettingsIconFilled /> : <SettingsIconOutline />;
+      return focused ? <SettingsIconFilled color={color} /> : <SettingsIconOutline color={color} />;
   }
 };
 
@@ -55,6 +68,8 @@ const TabBarBackground = (props: TabBarBackgroundProps) => {
   const { children, style, blurAmount, blurType } = props;
 
   const currentState = useAppSelector(selectCurrentState);
+  const { appearance } = useTheme();
+  const tabBarColor = appearance.tabBarColor;
 
   const tabBarHeight = useTabBarHeight();
 
@@ -79,11 +94,23 @@ const TabBarBackground = (props: TabBarBackgroundProps) => {
   // only an absolute-fill background behind the tab items.
   return Platform.OS === 'ios' ? (
     <Animated.View style={[style, animatedTabBarStyle]}>
-      <BlurView {...{ blurAmount, blurType }} style={tailwind.style('absolute inset-0 bg-white')} />
+      {tabBarColor ? (
+        <Animated.View
+          style={[tailwind.style('absolute inset-0'), { backgroundColor: tabBarColor }]}
+        />
+      ) : (
+        <BlurView
+          {...{ blurAmount, blurType }}
+          style={tailwind.style('absolute inset-0 bg-white')}
+        />
+      )}
       {children}
     </Animated.View>
   ) : (
-    <Animated.View style={[style, animatedTabBarStyle]}>{children}</Animated.View>
+    <Animated.View
+      style={[style, tabBarColor ? { backgroundColor: tabBarColor } : null, animatedTabBarStyle]}>
+      {children}
+    </Animated.View>
   );
 };
 
