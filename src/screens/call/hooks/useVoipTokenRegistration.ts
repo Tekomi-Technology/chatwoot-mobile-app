@@ -10,11 +10,18 @@ export const useVoipTokenRegistration = () => {
   const dispatch = useAppDispatch();
   const registeredTokenRef = useRef<string | null>(null);
   const pendingTokenRef = useRef<string | null>(null);
+  // A token the server refused is not retried every time the app comes to the foreground.
+  const rejectedTokenRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!systemCall.isAvailable()) return undefined;
     const register = (token: string | null) => {
-      if (!token || token === registeredTokenRef.current || token === pendingTokenRef.current) {
+      if (
+        !token ||
+        token === registeredTokenRef.current ||
+        token === pendingTokenRef.current ||
+        token === rejectedTokenRef.current
+      ) {
         return;
       }
       pendingTokenRef.current = token;
@@ -23,7 +30,9 @@ export const useVoipTokenRegistration = () => {
         .then(() => {
           registeredTokenRef.current = token;
         })
-        .catch(() => {})
+        .catch(() => {
+          rejectedTokenRef.current = token;
+        })
         .finally(() => {
           if (pendingTokenRef.current === token) pendingTokenRef.current = null;
         });

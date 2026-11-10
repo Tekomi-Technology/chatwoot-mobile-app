@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { apiService } from '@/services/APIService';
+import { apiService, type AccountScopedRequestConfig } from '@/services/APIService';
 import type {
   NotificationSettings,
   NotificationSettingsPayload,
@@ -44,7 +44,11 @@ export class SettingsService {
   }
 
   static async saveVoipToken(payload: VoipPushPayload): Promise<void> {
-    await apiService.post('notification_subscriptions', payload);
+    // Background registration. Servers without VoIP push support answer 4xx/5xx
+    // (Rails rejects the unknown `apns_voip` subscription type), which is not worth a toast.
+    await apiService.post('notification_subscriptions', payload, {
+      quietStatuses: [400, 404, 422, 500],
+    } as AccountScopedRequestConfig);
   }
 
   static async removeDevice(payload: RemoveDevicePayload): Promise<void> {
