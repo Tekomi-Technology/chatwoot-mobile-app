@@ -15,6 +15,17 @@
       "extends": "production",
       "environment": "production",
       "autoIncrement": true
+    },
+    "android-apk": {
+      "environment": "production",
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "android-store": {
+      "extends": "production",
+      "environment": "production",
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" }
     }
   },
   "submit": {
