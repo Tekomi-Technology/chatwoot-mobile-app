@@ -93,10 +93,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // and the shared secret deliberately stay server-side and are minted per user by
       // GET /inboxes/:id/phone_credentials.
       phoneNetwork: {
-        wssUrl: 'wss://wss.td1.tekomi.vn',
         sipDomain: 'td1.tekomi.vn',
-        stunUrls: ['stun:td1.tekomi.vn:3478'],
-        turnUrls: ['turn:td1.tekomi.vn:3478?transport=udp'],
+        // Matches the host and its subdomains (e.g. wss.td1.tekomi.vn) for WSS and STUN/TURN.
+        allowedHosts: ['td1.tekomi.vn'],
       },
       eas: {
         projectId: easProjectId,

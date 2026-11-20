@@ -40,7 +40,7 @@ export const phoneActions = {
     dispatch(phoneSlice.actions.reset());
   }),
   call: createAsyncThunk<void, { number: string }>('phone/call', async ({ number }) => {
-    softphoneClient.call(number);
+    await softphoneClient.call(number);
   }),
   answer: createAsyncThunk<void, void>('phone/answer', async () => {
     await softphoneClient.answer();

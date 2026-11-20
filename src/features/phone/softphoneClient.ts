@@ -2,6 +2,12 @@ import JsSIP from 'jssip';
 import { mediaDevices, registerGlobals } from 'react-native-webrtc';
 
 import type { PhoneCredentials, PhoneRuntimeState } from './phoneTypes';
+import {
+  ensureSoftphoneMicrophone,
+  MICROPHONE_DENIED_MESSAGE,
+  startSoftphoneAudio,
+  stopSoftphoneAudio,
+} from './softphoneAudio';
 
 const MEDIA_CONSTRAINTS = { audio: true, video: false };
 const REGISTER_EXPIRES_SECONDS = 120;
@@ -62,6 +68,7 @@ class SoftphoneClient {
   private session: SipSession | null = null;
   private credentials: PhoneCredentials | null = null;
   private registered = false;
+  private dialing = false;
   private listener: RuntimeListener | null = null;
 
   connect(credentials: PhoneCredentials, listener: RuntimeListener) {
@@ -114,11 +121,43 @@ class SoftphoneClient {
     ua.start();
   }
 
-  call(number: string) {
+  async call(number: string) {
     const destination = number.trim();
-    if (!destination || !this.ua || !this.credentials || !this.registered || this.session) return;
+    if (
+      !destination ||
+      !this.ua ||
+      !this.credentials ||
+      !this.registered ||
+      this.session ||
+      this.dialing
+    )
+      return;
 
+    this.dialing = true;
     this.emit({ status: 'calling', direction: 'outbound', remoteNumber: destination, error: '' });
+    try {
+      if (!(await ensureSoftphoneMicrophone())) {
+        this.emit({
+          status: this.registered ? 'ready' : 'disconnected',
+          direction: null,
+          remoteNumber: '',
+          error: MICROPHONE_DENIED_MESSAGE,
+        });
+        return;
+      }
+      // Registration may have dropped while the permission prompt was open.
+      if (!this.ua || !this.credentials || !this.registered || this.session) {
+        this.emit({ status: this.registered ? 'ready' : 'disconnected', direction: null });
+        return;
+      }
+      this.startOutboundCall(destination);
+    } finally {
+      this.dialing = false;
+    }
+  }
+
+  private startOutboundCall(destination: string) {
+    if (!this.ua || !this.credentials) return;
     const iceServers = this.credentials.iceServers;
     const pcConfig = iceServers.length
       ? { iceServers, ...(hasTurnServer(iceServers) ? { iceTransportPolicy: 'relay' } : {}) }
@@ -139,7 +178,13 @@ class SoftphoneClient {
 
   async answer() {
     if (!this.session || !this.credentials) return;
+    if (!(await ensureSoftphoneMicrophone())) {
+      this.emit({ error: MICROPHONE_DENIED_MESSAGE });
+      return;
+    }
+    if (!this.session) return;
     try {
+      startSoftphoneAudio();
       const stream = await mediaDevices.getUserMedia(MEDIA_CONSTRAINTS);
       const iceServers = this.credentials.iceServers;
       const pcConfig = iceServers.length
@@ -179,7 +224,12 @@ class SoftphoneClient {
   }
 
   disconnect() {
-    this.session?.terminate();
+    try {
+      this.session?.terminate();
+    } catch {
+      // JsSIP throws if the session already ended; disconnect must still finish.
+    }
+    stopSoftphoneAudio();
     this.ua?.stop();
     this.ua = null;
     this.session = null;
@@ -204,9 +254,19 @@ class SoftphoneClient {
     if (direction === 'inbound') {
       session.on('icecandidate', finishIceGatheringOnRelay);
     }
-    session.on('progress', () => this.emit({ status: 'ringing' }));
-    session.on('accepted', () => this.emit({ status: 'active' }));
-    session.on('confirmed', () => this.emit({ status: 'active' }));
+    session.on('progress', () => {
+      // 183 carries early media (ringback / carrier announcements) for outbound calls.
+      if (direction === 'outbound') startSoftphoneAudio();
+      this.emit({ status: 'ringing' });
+    });
+    session.on('accepted', () => {
+      startSoftphoneAudio();
+      this.emit({ status: 'active' });
+    });
+    session.on('confirmed', () => {
+      startSoftphoneAudio();
+      this.emit({ status: 'active' });
+    });
     session.on('ended', () => this.resetSession());
     session.on('failed', event => {
       this.emit({ error: event?.cause || 'Call failed' });
@@ -235,6 +295,7 @@ class SoftphoneClient {
 
   private resetSession() {
     this.session = null;
+    stopSoftphoneAudio();
     this.emit({
       status: this.registered ? 'ready' : 'disconnected',
       direction: null,

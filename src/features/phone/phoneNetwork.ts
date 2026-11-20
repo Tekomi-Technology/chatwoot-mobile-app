@@ -1,31 +1,66 @@
 import Constants from 'expo-constants';
 
 type PhoneNetworkConfig = {
-  wssUrl: string;
+  /** SIP domain the inbox must register against (exact match). */
   sipDomain: string;
-  stunUrls: string[];
-  turnUrls: string[];
+  /**
+   * Hosts the softphone may talk to for signalling (WSS) and media (STUN/TURN).
+   * A host matches itself and any of its subdomains, e.g. `td1.tekomi.vn` also
+   * allows `wss.td1.tekomi.vn`.
+   */
+  allowedHosts: string[];
 };
 
 type ExpoExtra = {
-  phoneNetwork?: PhoneNetworkConfig;
+  phoneNetwork?: Partial<PhoneNetworkConfig>;
 };
 
 const defaultNetwork: PhoneNetworkConfig = {
-  wssUrl: 'wss://wss.td1.tekomi.vn',
   sipDomain: 'td1.tekomi.vn',
-  stunUrls: ['stun:td1.tekomi.vn:3478'],
-  turnUrls: ['turn:td1.tekomi.vn:3478?transport=udp'],
+  allowedHosts: ['td1.tekomi.vn'],
 };
 
 const configuredNetwork = (Constants.expoConfig?.extra as ExpoExtra | undefined)?.phoneNetwork;
 
 /** Public PBX endpoints compiled into the TD1 mobile binary. No secret belongs here. */
-export const phoneNetwork: PhoneNetworkConfig = configuredNetwork || defaultNetwork;
+export const phoneNetwork: PhoneNetworkConfig = {
+  sipDomain: configuredNetwork?.sipDomain || defaultNetwork.sipDomain,
+  allowedHosts: configuredNetwork?.allowedHosts?.length
+    ? configuredNetwork.allowedHosts
+    : defaultNetwork.allowedHosts,
+};
+
+const normalizeHost = (host: string) => host.trim().toLowerCase().replace(/\.$/, '');
+
+export const isAllowedHost = (host: string, allowedHosts = phoneNetwork.allowedHosts) => {
+  const candidate = normalizeHost(host);
+  if (!candidate) return false;
+  return allowedHosts.some(allowed => {
+    const base = normalizeHost(allowed);
+    return candidate === base || candidate.endsWith(`.${base}`);
+  });
+};
+
+/** `wss://host[:port][/path]` → host, or null when the URL is not secure WebSocket. */
+export const hostFromWssUrl = (url: string): string | null => {
+  const match = /^wss:\/\/([^/:?#]+)(?::\d+)?(?:[/?#].*)?$/i.exec(url.trim());
+  return match ? match[1] : null;
+};
+
+/** `stun:host[:port]`, `turn:host[:port]?transport=…`, `turns:…` → scheme + host. */
+export const parseIceUrl = (url: string): { scheme: string; host: string } | null => {
+  const match = /^(stuns?|turns?):(?:\/\/)?([^/:?#]+)(?::\d+)?(?:[/?#].*)?$/i.exec(url.trim());
+  return match ? { scheme: match[1].toLowerCase(), host: match[2] } : null;
+};
 
 const urlsFromIceServers = (iceServers: RTCIceServer[]) =>
   iceServers.flatMap(server => (Array.isArray(server.urls) ? server.urls : [server.urls]));
 
+/**
+ * Refuses credentials that would point the softphone at a PBX or media relay outside the
+ * pinned network. Compares hosts rather than full URL strings so harmless server-side
+ * changes (a `/ws` path, a `turns:` TCP fallback, a `wss.` subdomain) keep working.
+ */
 export const assertTrustedPhoneNetwork = ({
   wssUrl,
   sipDomain,
@@ -35,15 +70,22 @@ export const assertTrustedPhoneNetwork = ({
   sipDomain: string;
   iceServers: RTCIceServer[];
 }) => {
-  if (wssUrl !== phoneNetwork.wssUrl || sipDomain !== phoneNetwork.sipDomain) {
+  const wssHost = hostFromWssUrl(wssUrl || '');
+  if (
+    !wssHost ||
+    !isAllowedHost(wssHost) ||
+    normalizeHost(sipDomain || '') !== normalizeHost(phoneNetwork.sipDomain)
+  ) {
     throw new Error('Phone inbox is configured for an unexpected SIP server.');
   }
 
-  const returnedUrls = urlsFromIceServers(iceServers);
-  const missingUrls = [...phoneNetwork.stunUrls, ...phoneNetwork.turnUrls].filter(
-    url => !returnedUrls.includes(url),
+  const parsed = urlsFromIceServers(iceServers).map(url =>
+    typeof url === 'string' ? parseIceUrl(url) : null,
   );
-  if (missingUrls.length) {
+  if (parsed.some(entry => !entry || !isAllowedHost(entry.host))) {
+    throw new Error('Phone inbox returned an unexpected STUN/TURN server.');
+  }
+  if (!parsed.some(entry => entry && entry.scheme.startsWith('turn'))) {
     throw new Error('Phone inbox is missing required STUN/TURN configuration.');
   }
 };
